@@ -1,0 +1,15 @@
+# OS Metadata (System files)
+.DS_Store
+Thumbs.db
+
+# GitHub Action logs
+*.log
+update-log.txt
+build-time.txt
+
+# Text Editor settings
+.vscode/
+.idea/
+
+# Node modules (only if you use packages later)
+node_modules/
