@@ -1,0 +1,25 @@
+name: "Velocity Sync & Update"
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  build-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Update Heartbeat
+        run: |
+          echo "Last System Sync: $(date)" > heartbeat.txt
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add heartbeat.txt
+          git commit -m "System: Velocity Heartbeat Updated [$(date)]" || echo "No changes to commit"
+          git push
