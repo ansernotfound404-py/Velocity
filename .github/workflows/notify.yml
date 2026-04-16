@@ -1,0 +1,16 @@
+name: "Velocity Deployment Alert"
+
+on:
+  workflow_run:
+    workflows: ["Velocity Sync & Update"]
+    types: [completed]
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Log Success
+        run: |
+          echo "Status: Velocity is live and optimized."
+          echo "Deployment Environment: Production"
