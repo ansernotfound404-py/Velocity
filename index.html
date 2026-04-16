@@ -1569,10 +1569,19 @@ window.addEventListener('load', () => {
 // ──────────────────────────────────────
 // SMOOTH SCROLL (Lenis)
 // ──────────────────────────────────────
-const lenis = new Lenis({ lerp: 0.08, smooth: true });
-function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
-requestAnimationFrame(raf);
+// NORMAL INSTANT SCROLL - No Delay
+const lenis = new Lenis({
+  lerp: 0.1,           // Faster response = normal feel
+  smooth: true,
+  smoothTouch: false,   // Instant on desktop
+  wheelMultiplier: 1.0  // Native wheel speed
+});
 
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
 // ──────────────────────────────────────
 // CURSOR
 // ──────────────────────────────────────
