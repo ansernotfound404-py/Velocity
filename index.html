@@ -3,1775 +3,1585 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VELOCITY | Infinite Gaming</title>
-
+<title>VELOCITY | Instant Game Access</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/gsap@3.12.2/dist/gsap.min.js"></script>
 <script src="https://unpkg.com/gsap@3.12.2/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --p1:#7c3aed;
-  --p2:#3b82f6;
-  --p3:#a855f7;
-  --bg:#03030b;
-  --bg2:#06060f;
-  --glass:rgba(255,255,255,0.04);
-  --glass-border:rgba(255,255,255,0.08);
-  --text-muted:rgba(255,255,255,0.45);
-  --text-sub:rgba(255,255,255,0.25);
+:root {
+  --p1:#7c3aed; --p2:#3b82f6; --p1-glow:rgba(124,58,237,0.4);
+  --bg:#020205; --gb:rgba(255,255,255,0.07); --surface:rgba(255,255,255,0.025);
 }
+*{ cursor:none !important; margin:0; padding:0; box-sizing:border-box; }
+body{ background:var(--bg); color:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow-x:hidden; }
 
-*{cursor:none!important;margin:0;padding:0;box-sizing:border-box;}
-
-html{scroll-behavior:smooth;}
-
-body{
-  background:var(--bg);
-  color:#fff;
-  font-family:'Plus Jakarta Sans',sans-serif;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
+/* ── CURSOR ────────────────────────────────────────────── */
+#cursor-aura{
+  width:800px; height:800px;
+  background:radial-gradient(circle,rgba(124,58,237,0.12) 0%,rgba(59,130,246,0.06) 40%,transparent 65%);
+  border-radius:50%; position:fixed; z-index:1; pointer-events:none;
+  mix-blend-mode:screen; will-change:transform;
 }
-
-/* ─── LOADER ─── */
-#loader{
-  position:fixed;inset:0;
-  background:#000;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  z-index:10000;
-  gap:24px;
-}
-#loader-text{
-  font-family:'Syne',sans-serif;
-  font-size:3.5rem;
-  font-weight:800;
-  letter-spacing:0.3em;
-  background:linear-gradient(90deg,#7c3aed,#3b82f6,#a855f7);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-#loader-bar-wrap{
-  width:220px;height:2px;
-  background:rgba(255,255,255,0.07);
-  border-radius:999px;overflow:hidden;
-}
-#loader-bar{
-  height:100%;width:0%;
-  background:linear-gradient(90deg,#7c3aed,#3b82f6);
-  border-radius:999px;
-  transition:width 0.05s linear;
-}
-#loader-sub{
-  font-family:'Space Mono',monospace;
-  font-size:0.65rem;
-  letter-spacing:0.25em;
-  color:rgba(255,255,255,0.25);
-}
-
-/* ─── PARTICLES ─── */
-#particles{position:fixed;inset:0;z-index:-2;pointer-events:none;}
-
-/* ─── AMBIENT GLOW ─── */
-#glow{
-  position:fixed;
-  width:1000px;height:1000px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(124,58,237,0.55),rgba(59,130,246,0.4),transparent 70%);
-  filter:blur(90px);
-  z-index:-1;
-  pointer-events:none;
-  transition:background 0.3s;
-}
-#ambient{
-  position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:
-    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(124,58,237,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 30% at 80% 20%, rgba(59,130,246,0.07) 0%, transparent 70%);
-  animation:ambientDrift 18s ease-in-out infinite alternate;
-}
-@keyframes ambientDrift{
-  0%  {transform:translate(0,0) scale(1);}
-  50% {transform:translate(30px,-20px) scale(1.04);}
-  100%{transform:translate(-20px,15px) scale(0.97);}
-}
-
-/* ─── CURSOR ─── */
 #cursor-dot{
-  width:6px;height:6px;
-  background:#fff;
-  border-radius:50%;
-  position:fixed;z-index:9999;
-  pointer-events:none;
+  width:5px; height:5px; background:#fff; border-radius:50%;
+  position:fixed; z-index:10000; pointer-events:none;
   mix-blend-mode:difference;
-  transition:transform 0.1s ease;
+  transition:width .15s, height .15s;
 }
+#cursor-dot.clicking{ width:9px; height:9px; }
 #cursor-ring{
-  width:44px;height:44px;
-  border:1px solid rgba(167,139,250,0.5);
-  border-radius:50%;
-  position:fixed;z-index:9998;
-  pointer-events:none;
-  backdrop-filter:blur(2px);
-  transition:width 0.3s ease,height 0.3s ease,border-color 0.3s ease,background 0.3s ease;
-}
-#cursor-ring.hovered{
-  width:64px;height:64px;
-  border-color:rgba(167,139,250,0.9);
-  background:rgba(124,58,237,0.08);
-}
-
-/* ─── NAV ─── */
-nav{
-  position:fixed;top:0;width:100%;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:28px 72px;
-  z-index:500;
-  transition:background 0.4s, backdrop-filter 0.4s, padding 0.4s;
-}
-nav.scrolled{
-  background:rgba(3,3,11,0.7);
-  backdrop-filter:blur(20px);
-  padding:18px 72px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.nav-logo{
-  font-family:'Syne',sans-serif;
-  font-weight:800;
-  font-size:1.1rem;
-  letter-spacing:0.3em;
-  background:linear-gradient(90deg,#a78bfa,#60a5fa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.nav-links{display:flex;align-items:center;gap:40px;}
-.nav-link{
-  font-size:0.7rem;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  color:var(--text-muted);
-  text-decoration:none;
-  position:relative;
-  transition:color 0.3s;
-}
-.nav-link::after{
-  content:'';
-  position:absolute;bottom:-4px;left:0;
-  width:0%;height:1px;
-  background:linear-gradient(90deg,#a78bfa,#60a5fa);
-  transition:width 0.3s;
-}
-.nav-link.active{color:#a78bfa;}
-.nav-link.active::after{width:100%;}
-.nav-cta{
-  font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;
-  padding:10px 24px;
-  border:1px solid rgba(124,58,237,0.5);
-  background:rgba(124,58,237,0.1);
-  color:#a78bfa;
-  border-radius:2px;
-  transition:all 0.3s;
-  text-decoration:none;
-}
-.nav-cta:hover{background:rgba(124,58,237,0.25);border-color:#7c3aed;}
-
-/* ─── SECTIONS ─── */
-section{
-  position:relative;
-  padding:160px 80px;
-  overflow:hidden;
-}
-
-/* ─── HERO ─── */
-#hero{
-  min-height:100vh;
-  display:flex;align-items:center;
-  padding:0 80px;
-  padding-top:140px;
-}
-.hero-tag{
-  font-family:'Space Mono',monospace;
-  font-size:0.65rem;
-  letter-spacing:0.35em;
-  color:var(--text-sub);
-  text-transform:uppercase;
-  margin-bottom:32px;
-  display:flex;align-items:center;gap:12px;
-}
-.hero-tag::before{
-  content:'';width:32px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(167,139,250,0.6));
-}
-.hero-heading{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(5rem, 14vw, 13rem);
-  font-weight:800;
-  line-height:0.88;
-  letter-spacing:-0.02em;
-  background:linear-gradient(135deg,#c4b5fd 0%,#818cf8 35%,#60a5fa 65%,#a78bfa 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  width:38px; height:38px;
+  border:1.5px solid rgba(255,255,255,0.25);
+  border-radius:50%; position:fixed; z-index:9999; pointer-events:none;
   will-change:transform;
+  transform-origin:center center;
 }
-.hero-sub{
-  font-size:1rem;
-  color:var(--text-muted);
-  max-width:480px;
-  line-height:1.8;
-  margin-top:28px;
-  font-weight:300;
-  letter-spacing:0.02em;
-}
-.hero-actions{display:flex;align-items:center;gap:24px;margin-top:56px;}
-.btn-primary{
-  font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;
-  padding:18px 44px;
-  background:linear-gradient(135deg,#7c3aed,#3b82f6);
-  color:#fff;
-  border:none;
-  position:relative;overflow:hidden;
-  transition:transform 0.3s, box-shadow 0.3s;
-}
-.btn-primary::before{
-  content:'';
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,#a855f7,#60a5fa);
-  opacity:0;
-  transition:opacity 0.3s;
-}
-.btn-primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 0 40px rgba(124,58,237,0.5);
-}
-.btn-primary:hover::before{opacity:1;}
-.btn-primary span{position:relative;z-index:1;}
-.btn-secondary{
-  font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;
-  padding:18px 44px;
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.12);
-  color:var(--text-muted);
-  transition:all 0.3s;
-}
-.btn-secondary:hover{border-color:rgba(167,139,250,0.4);color:#c4b5fd;}
+#cursor-ring.hovering{ border-color:var(--p1); box-shadow:0 0 14px rgba(124,58,237,0.55); }
+.cursor-spark{ position:fixed; width:3px; height:3px; border-radius:50%; background:var(--p1); pointer-events:none; z-index:9997; }
+.click-ripple{ position:fixed; width:8px; height:8px; border-radius:50%; border:1.5px solid rgba(124,58,237,0.75); pointer-events:none; z-index:9996; animation:ripple-out .7s cubic-bezier(.2,1,.2,1) forwards; }
+@keyframes ripple-out{ 0%{ transform:translate(-50%,-50%) scale(0); opacity:1; } 100%{ transform:translate(-50%,-50%) scale(22); opacity:0; } }
 
-/* hero scroll hint */
-.scroll-hint{
-  position:absolute;bottom:48px;left:80px;
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.25em;
-  color:var(--text-sub);
-  display:flex;align-items:center;gap:12px;
-}
-.scroll-hint-line{
-  width:48px;height:1px;
-  background:linear-gradient(90deg,rgba(124,58,237,0.6),transparent);
-  animation:scrollPulse 2s ease-in-out infinite;
-}
-@keyframes scrollPulse{
-  0%,100%{opacity:0.4;}
-  50%{opacity:1;}
-}
+/* ── GRAIN ─────────────────────────────────────────────── */
+body::before{ content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:0.03; }
 
-/* hero grid overlay */
-.hero-grid{
-  position:absolute;inset:0;
-  background-image:
-    linear-gradient(rgba(124,58,237,0.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(124,58,237,0.03) 1px,transparent 1px);
-  background-size:80px 80px;
-  z-index:-1;
-  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%);
-}
+/* ── AMBIENT ORBS ──────────────────────────────────────── */
+.ambient-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(110px); opacity:1; will-change:transform; }
+.orb-1{ width:700px; height:700px; background:radial-gradient(circle,rgba(124,58,237,0.09),transparent 70%); top:-250px; left:-200px; animation:orb-drift1 25s ease-in-out infinite; }
+.orb-2{ width:550px; height:550px; background:radial-gradient(circle,rgba(59,130,246,0.07),transparent 70%); bottom:-200px; right:-150px; animation:orb-drift2 30s ease-in-out infinite; }
+.orb-3{ width:400px; height:400px; background:radial-gradient(circle,rgba(124,58,237,0.05),transparent 70%); top:50%; left:50%; margin-left:-200px; margin-top:-200px; animation:orb-drift3 20s ease-in-out infinite; }
+@keyframes orb-drift1{ 0%,100%{transform:translate(0,0)} 33%{transform:translate(100px,-80px)} 66%{transform:translate(-50px,100px)} }
+@keyframes orb-drift2{ 0%,100%{transform:translate(0,0)} 33%{transform:translate(-80px,60px)} 66%{transform:translate(60px,-100px)} }
+@keyframes orb-drift3{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,-60px) scale(1.3)} }
 
-/* ─── STATS BAR ─── */
-#stats{
-  padding:80px;
-  border-top:1px solid var(--glass-border);
-  border-bottom:1px solid var(--glass-border);
-  background:rgba(255,255,255,0.015);
-}
-.stats-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:0;
-}
-.stat-item{
-  padding:40px 48px;
-  border-right:1px solid var(--glass-border);
-  position:relative;
-}
-.stat-item:last-child{border-right:none;}
-.stat-number{
-  font-family:'Syne',sans-serif;
-  font-size:3.5rem;
-  font-weight:800;
-  background:linear-gradient(135deg,#a78bfa,#60a5fa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  line-height:1;
-}
-.stat-label{
-  font-size:0.65rem;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  color:var(--text-sub);
-  margin-top:8px;
-}
+/* ── CINEMATIC BLUR ENGINE ─────────────────────────────── */
+section{ min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; position:relative; padding:120px 8%; transition:filter .9s cubic-bezier(.2,1,.2,1), transform .9s cubic-bezier(.2,1,.2,1), opacity .9s; }
+.out-of-focus{ filter:blur(18px); transform:scale(0.92); opacity:0.15; }
 
-/* ─── VISION ─── */
-#vision{
-  min-height:100vh;
-  display:flex;align-items:center;
-}
-.vision-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:120px;
-  align-items:center;
+/* ── FEATURE CARDS ─────────────────────────────────────── */
+.fc-container{ perspective:1600px; width:100%; }
+.fc{ position:relative; background:var(--surface); border:1px solid var(--gb); padding:60px; border-radius:12px; transform-style:preserve-3d; transition:border-color .4s; overflow:hidden; }
+.fc::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(124,58,237,0.045) 0%,transparent 60%); border-radius:12px; pointer-events:none; }
+.fc::after{ content:''; position:absolute; inset:-1px; border:1.5px solid var(--p1); opacity:0; transition:opacity .35s; pointer-events:none; border-radius:12px; }
+.fc:hover::after{ opacity:1; animation:neon-pulse 1.8s infinite; }
+@keyframes neon-pulse{ 0%,100%{ box-shadow:0 0 8px var(--p1-glow),inset 0 0 8px rgba(124,58,237,0.04); } 50%{ box-shadow:0 0 32px var(--p1-glow),inset 0 0 22px rgba(124,58,237,0.08); } }
+.fc-glow{ position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(124,58,237,0.24),transparent 70%); border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); opacity:0; transition:opacity .45s; z-index:0; }
+.fc:hover .fc-glow{ opacity:1; }
+.fc>*:not(.fc-glow){ position:relative; z-index:1; }
+
+/* ── TYPOGRAPHY ────────────────────────────────────────── */
+.h-xl{ font-family:'Syne',sans-serif; font-size:clamp(3.5rem,11vw,9.5rem); font-weight:800; line-height:.88; letter-spacing:-.04em; }
+.g-text{ background:linear-gradient(110deg,#fff 0%,var(--p1) 45%,var(--p2) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.eyebrow{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.65em; color:var(--p1); text-transform:uppercase; margin-bottom:1.5rem; display:block; }
+
+/* ── HERO ELEMENTS ─────────────────────────────────────── */
+.hero-badge{ display:inline-flex; align-items:center; gap:10px; border:1px solid rgba(124,58,237,.35); background:rgba(124,58,237,.07); border-radius:100px; padding:8px 18px; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.3em; color:rgba(255,255,255,.5); margin-bottom:2.5rem; transition:border-color .3s, background .3s; }
+.hero-badge:hover{ border-color:rgba(124,58,237,.6); background:rgba(124,58,237,.12); }
+.hero-badge-dot{ width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:pulse-dot 2s infinite; }
+@keyframes pulse-dot{ 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ── CTA BUTTONS ───────────────────────────────────────── */
+.cta-primary{ display:inline-flex; align-items:center; gap:14px; background:linear-gradient(135deg,var(--p1),var(--p2)); padding:17px 34px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.3em; text-transform:uppercase; font-weight:700; color:#fff; border-radius:6px; border:none; position:relative; overflow:hidden; transition:transform .3s, box-shadow .3s; -webkit-tap-highlight-color:transparent; }
+.cta-primary::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,#9b59f5,#60a5fa); opacity:0; transition:opacity .3s; }
+.cta-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 44px rgba(124,58,237,.55), 0 0 80px rgba(124,58,237,.15); }
+.cta-primary:hover::before{ opacity:1; }
+.cta-primary:active{ transform:scale(0.96) translateY(0); box-shadow:0 4px 20px rgba(124,58,237,.4); }
+.cta-primary span, .cta-arrow{ position:relative; z-index:1; }
+.cta-arrow{ transition:transform .3s; font-size:18px; }
+.cta-primary:hover .cta-arrow{ transform:translateX(6px); }
+.cta-ghost{ display:inline-flex; align-items:center; gap:10px; padding:17px 26px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1); border-radius:6px; transition:border-color .3s, color .3s, background .3s; }
+.cta-ghost:hover{ border-color:rgba(255,255,255,.3); color:#fff; background:rgba(255,255,255,.04); }
+.cta-ghost:active{ transform:scale(0.97); }
+
+/* ── STATS LINE ────────────────────────────────────────── */
+.stat-line{ padding-top:2.5rem; border-top:1px solid rgba(255,255,255,.07); display:flex; gap:48px; flex-wrap:wrap; }
+.stat-num{ font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; background:linear-gradient(to right,#fff,rgba(255,255,255,.55)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.stat-label{ font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.28); margin-top:4px; font-family:'Space Mono',monospace; }
+.stat-item{ transition:transform .3s; }
+.stat-item:hover{ transform:translateY(-4px); }
+
+/* ── MARQUEE ───────────────────────────────────────────── */
+.marquee-wrap{ overflow:hidden; border-top:1px solid var(--gb); border-bottom:1px solid var(--gb); padding:18px 0; position:relative; z-index:10; }
+.marquee-track{ display:flex; gap:48px; width:max-content; animation:marquee 22s linear infinite; }
+.marquee-item{ font-family:'Syne',sans-serif; font-size:12px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.11); white-space:nowrap; display:flex; align-items:center; gap:14px; }
+.marquee-dot{ width:4px; height:4px; border-radius:50%; background:var(--p1); }
+@keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* ── SCROLL INDICATOR ──────────────────────────────────── */
+.scroll-indicator{ position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.18); }
+.scroll-line{ width:1px; height:40px; background:linear-gradient(to bottom,var(--p1),transparent); animation:scroll-drop 2s ease-in-out infinite; }
+@keyframes scroll-drop{ 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+/* ── PROGRESS BAR ──────────────────────────────────────── */
+.progress-track{ width:100%; height:2px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
+#speed-bar{ height:100%; width:0; background:linear-gradient(to right,var(--p1),var(--p2)); border-radius:2px; }
+
+/* ── DNA BUBBLES ───────────────────────────────────────── */
+#bubble-wrap{ position:absolute; inset:0; overflow:hidden; }
+.dna-bubble{ position:absolute; padding:9px 20px; border:1px solid rgba(255,255,255,.07); border-radius:100px; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(124,58,237,.65); backdrop-filter:blur(10px); background:rgba(124,58,237,.04); white-space:nowrap; transition:border-color .3s, color .3s, background .3s; }
+.dna-bubble:hover{ border-color:rgba(124,58,237,.5); color:rgba(124,58,237,.95); background:rgba(124,58,237,.1); }
+
+/* ══════════════════════════════════════════════════
+   BUILD YOUR OWN CARD — FIXED
+════════════════════════════════════════════════════ */
+.byo-calc{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+.byo-label{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.28); display:block; margin-bottom:6px; }
+.byo-input-row{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:8px; padding:9px 12px; transition:border-color .25s; }
+.byo-input-row:focus-within{ border-color:rgba(124,58,237,.5); box-shadow:0 0 0 2px rgba(124,58,237,.1); }
+.byo-prefix,.byo-suffix{ font-family:'Syne',sans-serif; font-size:.9rem; font-weight:800; color:rgba(124,58,237,.75); flex-shrink:0; }
+.byo-input{ flex:1; background:transparent; border:none; outline:none; font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:#fff; width:100%; -moz-appearance:textfield; }
+.byo-input::-webkit-inner-spin-button,.byo-input::-webkit-outer-spin-button{ -webkit-appearance:none; }
+.byo-input::placeholder{ color:rgba(255,255,255,.1); }
+.byo-or{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.18); text-align:center; padding:2px 0; }
+
+/* FIXED OUTPUT — stack label on top, value below */
+.byo-output{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:16px 0 18px;
   width:100%;
-  max-width:1400px;
-  margin:0 auto;
 }
-.section-eyebrow{
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;
-  letter-spacing:0.35em;
-  color:var(--p3);
-  text-transform:uppercase;
-  margin-bottom:24px;
-  opacity:0.7;
-}
-.section-heading{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(2.5rem,5vw,4.5rem);
-  font-weight:800;
-  line-height:1.05;
-  letter-spacing:-0.02em;
-}
-.gradient-text{
-  background:linear-gradient(135deg,#c4b5fd,#60a5fa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.vision-body{
-  color:var(--text-muted);
-  font-size:1rem;
-  line-height:1.9;
-  font-weight:300;
-  margin-top:24px;
-}
-.vision-pills{
-  display:flex;flex-wrap:wrap;gap:10px;
-  margin-top:40px;
-}
-.pill{
-  font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;
-  padding:8px 20px;
-  background:rgba(124,58,237,0.1);
-  border:1px solid rgba(124,58,237,0.25);
-  color:rgba(167,139,250,0.8);
-  border-radius:999px;
-  transition:all 0.3s;
-}
-.pill:hover{background:rgba(124,58,237,0.2);border-color:rgba(167,139,250,0.4);}
-
-/* vision right panel */
-.vision-panel{
-  position:relative;
-  padding:56px;
-  background:var(--glass);
-  border:1px solid var(--glass-border);
-  overflow:hidden;
-}
-.vision-panel::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(124,58,237,0.6),rgba(59,130,246,0.6),transparent);
-}
-.vision-panel-item{
-  display:flex;align-items:flex-start;gap:20px;
-  padding:24px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.vision-panel-item:last-child{border-bottom:none;}
-.vision-panel-icon{
-  width:44px;height:44px;min-width:44px;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(124,58,237,0.15);
-  border:1px solid rgba(124,58,237,0.2);
-  font-size:1.2rem;
-}
-.vision-panel-title{
-  font-family:'Syne',sans-serif;
-  font-size:0.85rem;font-weight:700;
-  letter-spacing:0.05em;
-  margin-bottom:6px;
-}
-.vision-panel-desc{
-  font-size:0.8rem;
-  color:var(--text-muted);
-  line-height:1.7;
-}
-
-/* ─── SYSTEM LINE ─── */
-.system-line{
-  display:flex;align-items:center;gap:0;
-  overflow:hidden;
-  padding:32px 0;
-  border-top:1px solid var(--glass-border);
-  border-bottom:1px solid var(--glass-border);
-}
-.system-ticker{
-  display:flex;align-items:center;gap:80px;
-  animation:ticker 30s linear infinite;
-  white-space:nowrap;
-}
-.system-ticker span{
-  font-family:'Space Mono',monospace;
-  font-size:0.65rem;letter-spacing:0.3em;
-  color:var(--text-sub);
-  text-transform:uppercase;
-}
-.system-ticker strong{
-  color:rgba(167,139,250,0.6);
-}
-@keyframes ticker{
-  0%{transform:translateX(0);}
-  100%{transform:translateX(-50%);}
-}
-
-/* ─── FEATURES ─── */
-#features{
-  min-height:100vh;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(124,58,237,0.06), transparent),
-    var(--bg);
-}
-.features-header{
-  text-align:center;
-  margin-bottom:96px;
-  max-width:700px;
-  margin-left:auto;
-  margin-right:auto;
-}
-.features-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:2px;
-  max-width:1400px;
-  margin:0 auto;
-}
-.feature-card{
-  position:relative;
-  padding:72px 64px;
-  background:rgba(255,255,255,0.025);
-  border:1px solid var(--glass-border);
-  overflow:hidden;
-  transition:background 0.4s;
-  transform-style:preserve-3d;
-}
-.feature-card::before{
-  content:'';
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(59,130,246,0.05));
-  opacity:0;
-  transition:opacity 0.4s;
-}
-.feature-card:hover{background:rgba(255,255,255,0.04);}
-.feature-card:hover::before{opacity:1;}
-.feature-card-glow{
-  position:absolute;
-  width:300px;height:300px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(124,58,237,0.25),transparent 70%);
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.3s;
-  transform:translate(-50%,-50%);
-}
-.feature-card:hover .feature-card-glow{opacity:1;}
-.feature-num{
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;
-  letter-spacing:0.3em;
-  color:var(--text-sub);
-  margin-bottom:32px;
-}
-.feature-icon{
-  font-size:2.5rem;
-  margin-bottom:28px;
-  display:block;
-  filter:drop-shadow(0 0 12px rgba(124,58,237,0.5));
-}
-.feature-title{
-  font-family:'Syne',sans-serif;
-  font-size:1.9rem;
-  font-weight:800;
-  letter-spacing:-0.01em;
-  margin-bottom:16px;
-  background:linear-gradient(135deg,#e2d9f3,#c4b5fd);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.feature-desc{
-  font-size:0.9rem;
-  color:var(--text-muted);
-  line-height:1.85;
-  font-weight:300;
-  max-width:420px;
-}
-.feature-tag{
-  display:inline-block;
-  margin-top:32px;
-  font-size:0.6rem;
-  letter-spacing:0.2em;text-transform:uppercase;
-  padding:6px 16px;
-  background:rgba(124,58,237,0.12);
-  border:1px solid rgba(124,58,237,0.2);
-  color:rgba(167,139,250,0.7);
-}
-
-/* ─── SPECS ─── */
-#specs{
-  background:var(--bg2);
-  border-top:1px solid var(--glass-border);
-  border-bottom:1px solid var(--glass-border);
-}
-.specs-layout{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:80px;
-  max-width:1400px;
-  margin:0 auto;
-  align-items:center;
-}
-.spec-terminal{
-  background:#000;
-  border:1px solid rgba(124,58,237,0.3);
-  font-family:'Space Mono',monospace;
-  font-size:0.78rem;
-  overflow:hidden;
-  position:relative;
-}
-.spec-terminal-bar{
-  background:rgba(124,58,237,0.15);
-  padding:12px 20px;
-  display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid rgba(124,58,237,0.2);
-}
-.terminal-dot{width:10px;height:10px;border-radius:50%;}
-.t-red{background:#ff5f57;}
-.t-yellow{background:#febc2e;}
-.t-green{background:#28c840;}
-.terminal-title{
-  font-size:0.55rem;letter-spacing:0.2em;
-  color:var(--text-sub);margin-left:8px;
-}
-.spec-terminal-body{
-  padding:32px;
-  line-height:2;
-}
-.t-line{display:block;}
-.t-prompt{color:#7c3aed;}
-.t-cmd{color:#a78bfa;}
-.t-out{color:rgba(255,255,255,0.45);}
-.t-success{color:#34d399;}
-.t-cursor{
-  display:inline-block;width:8px;height:14px;
-  background:#7c3aed;margin-left:2px;
-  animation:blink 1.1s step-end infinite;
-  vertical-align:middle;
-}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-
-.spec-list{display:flex;flex-direction:column;gap:0;}
-.spec-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:20px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.spec-row:last-child{border-bottom:none;}
-.spec-key{
-  font-size:0.7rem;letter-spacing:0.1em;
-  color:var(--text-sub);text-transform:uppercase;
-  font-family:'Space Mono',monospace;
-}
-.spec-val{
-  font-family:'Syne',sans-serif;
-  font-size:0.95rem;
-  font-weight:700;
-  background:linear-gradient(90deg,#c4b5fd,#93c5fd);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* ─── SHOWCASE ─── */
-#showcase{
-  min-height:100vh;
-  display:flex;flex-direction:column;
-  justify-content:center;
-  overflow:hidden;
-}
-.showcase-header{
-  text-align:center;
-  margin-bottom:80px;
-}
-.showcase-scroll{
-  display:flex;gap:24px;
-  animation:showreel 40s linear infinite;
-  width:max-content;
-}
-.showcase-card{
-  width:380px;
-  height:240px;
-  flex-shrink:0;
-  border:1px solid var(--glass-border);
-  background:var(--glass);
-  position:relative;
-  overflow:hidden;
-  transition:border-color 0.3s;
-}
-.showcase-card:hover{border-color:rgba(124,58,237,0.4);}
-.showcase-card-inner{
-  width:100%;height:100%;
-  display:flex;flex-direction:column;
-  justify-content:flex-end;
-  padding:28px;
-  background:linear-gradient(to top, rgba(3,3,11,0.9) 0%, transparent 60%);
-  position:relative;z-index:1;
-}
-.showcase-card-bg{
-  position:absolute;inset:0;
-  opacity:0.15;
-  transition:opacity 0.4s;
-}
-.showcase-card:hover .showcase-card-bg{opacity:0.25;}
-.sc-label{
-  font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;
-  color:rgba(167,139,250,0.6);
-  margin-bottom:6px;
-  font-family:'Space Mono',monospace;
-}
-.sc-title{
-  font-family:'Syne',sans-serif;
-  font-size:1.1rem;font-weight:800;
-  color:rgba(255,255,255,0.9);
-}
-@keyframes showreel{
-  0%{transform:translateX(0);}
-  100%{transform:translateX(-50%);}
-}
-
-/* ─── TESTIMONIALS ─── */
-#testimonials{
-  background:
-    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(59,130,246,0.06), transparent),
-    var(--bg);
-}
-.testimonials-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:24px;
-  max-width:1400px;
-  margin:80px auto 0;
-}
-.testi-card{
-  padding:48px;
-  background:var(--glass);
-  border:1px solid var(--glass-border);
-  position:relative;
-  overflow:hidden;
-  transition:border-color 0.3s, transform 0.4s;
-}
-.testi-card:hover{
-  border-color:rgba(124,58,237,0.3);
-  transform:translateY(-4px);
-}
-.testi-card::before{
-  content:'"';
-  position:absolute;top:-20px;left:32px;
-  font-family:'Syne',sans-serif;
-  font-size:8rem;font-weight:800;
-  color:rgba(124,58,237,0.08);
-  line-height:1;
-  pointer-events:none;
-}
-.testi-stars{
-  display:flex;gap:4px;
-  margin-bottom:24px;
-}
-.star{color:#fbbf24;font-size:0.8rem;}
-.testi-text{
-  font-size:0.9rem;
-  color:var(--text-muted);
-  line-height:1.85;
-  font-weight:300;
-  font-style:italic;
-}
-.testi-author{
-  display:flex;align-items:center;gap:14px;
-  margin-top:32px;
-  padding-top:24px;
-  border-top:1px solid rgba(255,255,255,0.05);
-}
-.testi-avatar{
-  width:40px;height:40px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#7c3aed,#3b82f6);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;
-  font-size:0.9rem;font-weight:800;
-  color:#fff;
-}
-.testi-name{
-  font-family:'Syne',sans-serif;
-  font-size:0.8rem;font-weight:700;
-}
-.testi-loc{
-  font-size:0.65rem;
-  color:var(--text-sub);
-  letter-spacing:0.1em;
-  margin-top:2px;
-}
-
-/* ─── PRICING ─── */
-#pricing{
-  min-height:80vh;
-  display:flex;align-items:center;
-  background:
-    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(124,58,237,0.07), transparent),
-    var(--bg2);
-  border-top:1px solid var(--glass-border);
-}
-.pricing-center{
-  max-width:900px;
-  margin:0 auto;
-  text-align:center;
-}
-.pricing-card{
-  margin-top:64px;
-  padding:72px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(124,58,237,0.25);
-  position:relative;
-  overflow:hidden;
-}
-.pricing-card::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;
-  height:2px;
-  background:linear-gradient(90deg,transparent,#7c3aed,#3b82f6,#7c3aed,transparent);
-}
-.pricing-badge{
-  position:absolute;top:28px;right:28px;
-  font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;
-  padding:6px 16px;
-  background:linear-gradient(135deg,#7c3aed,#3b82f6);
-  color:#fff;
-}
-.price-num{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(3rem,8vw,6rem);
-  font-weight:800;
-  background:linear-gradient(135deg,#c4b5fd,#60a5fa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  line-height:1;
-}
-.price-period{
-  font-size:0.75rem;letter-spacing:0.2em;
-  color:var(--text-sub);text-transform:uppercase;
-  margin-top:8px;
-}
-.price-features{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  margin-top:56px;
-  text-align:left;
-}
-.price-feat{
-  display:flex;align-items:center;gap:12px;
-  font-size:0.85rem;
-  color:var(--text-muted);
-}
-.price-check{
-  width:20px;height:20px;min-width:20px;
-  background:rgba(124,58,237,0.2);
-  border:1px solid rgba(124,58,237,0.4);
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.6rem;
-  color:#a78bfa;
-}
-.pricing-cta{
-  margin-top:56px;
+.byo-stat-row{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:14px 18px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
   width:100%;
-  padding:22px;
-  background:linear-gradient(135deg,#7c3aed,#3b82f6);
-  font-family:'Syne',sans-serif;
-  font-size:0.9rem;letter-spacing:0.2em;
+  min-width:0;
+}
+.byo-stat-row.byo-hl{
+  background:rgba(124,58,237,.22);
+  border-color:rgba(124,58,237,.55);
+}
+.byo-stat-row.byo-gr{
+  background:rgba(74,222,128,.18);
+  border-color:rgba(74,222,128,.45);
+}
+.byo-stat-row.byo-gr.byo-gr-empty{
+  background:rgba(74,222,128,.06);
+  border-color:rgba(74,222,128,.18);
+}
+.byo-stat-row.byo-gr.byo-gr-empty .byo-num{
+  color:rgba(74,222,128,.4);
+  font-size:1.1rem;
+}
+.byo-lbl{
+  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:rgba(255,255,255,.7);
   font-weight:700;
-  color:#fff;
-  border:none;
-  position:relative;overflow:hidden;
-  transition:all 0.4s;
 }
-.pricing-cta::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,#9333ea,#2563eb);
-  opacity:0;transition:opacity 0.3s;
+.byo-num{
+  font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800;
+  color:#fff; line-height:1.1; word-break:break-word;
 }
-.pricing-cta:hover{box-shadow:0 0 60px rgba(124,58,237,0.5),0 0 120px rgba(59,130,246,0.2);}
-.pricing-cta:hover::before{opacity:1;}
-.pricing-cta span{position:relative;z-index:1;}
-.pricing-note{
-  margin-top:24px;
-  font-size:0.65rem;letter-spacing:0.15em;
-  color:var(--text-sub);
-}
+.byo-hl .byo-lbl{ color:rgba(200,170,255,.9); }
+.byo-hl .byo-num{ color:#fff; }
+.byo-gr .byo-lbl{ color:rgba(134,239,172,.9); }
+.byo-gr .byo-num{ color:#4ade80; }
 
-/* ─── CTA BANNER ─── */
-#cta-banner{
-  padding:120px 80px;
+/* Tier hint */
+.byo-tier-hint{
+  margin-bottom:14px; padding:11px 16px;
+  background:rgba(124,58,237,.18);
+  border:1px solid rgba(124,58,237,.45);
+  border-radius:8px;
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:.12em; color:#c4b5fd;
   text-align:center;
-  position:relative;
+  display:none; line-height:1.6;
+  font-weight:700;
+}
+
+/* ── CONTACT ───────────────────────────────────────────── */
+.contact-btn{ display:flex; align-items:center; justify-content:center; width:70px; height:70px; border:1px solid var(--gb); border-radius:50%; background:rgba(255,255,255,.02); transition:border-color .3s, background .3s, transform .3s, box-shadow .3s; }
+.contact-btn:hover{ border-color:var(--p1); background:rgba(124,58,237,.1); transform:scale(1.12); box-shadow:0 0 28px rgba(124,58,237,.3); }
+.contact-btn:active{ transform:scale(0.95); }
+.contact-btn svg{ width:26px; height:26px; }
+
+/* ── HOW IT WORKS ──────────────────────────────────────── */
+.step-wrap{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; width:100%; }
+.step-card{ display:flex; flex-direction:column; gap:1rem; padding:2.4rem; background:var(--surface); border:1px solid var(--gb); border-radius:12px; transition:border-color .35s, background .35s, box-shadow .35s; transform-style:preserve-3d; perspective:800px; }
+.step-card:hover{ border-color:rgba(124,58,237,.45); background:rgba(124,58,237,.04); box-shadow:0 12px 40px rgba(124,58,237,.1); }
+.step-num{ font-family:'Syne',sans-serif; font-size:4rem; font-weight:800; line-height:1; color:rgba(124,58,237,.15); }
+.step-title{ font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; }
+.step-body{ font-size:.9rem; color:rgba(255,255,255,.33); line-height:1.8; }
+
+/* ── FEATURE GRID ──────────────────────────────────────── */
+.feature-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.2rem; width:100%; }
+.feat-card{ padding:2.2rem; background:var(--surface); border:1px solid var(--gb); border-radius:12px; transition:border-color .35s, transform .35s, box-shadow .35s; position:relative; overflow:hidden; transform-style:preserve-3d; perspective:800px; }
+.feat-card::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(124,58,237,0.04) 0%,transparent 70%); pointer-events:none; border-radius:12px; }
+.feat-card:hover{ border-color:rgba(124,58,237,.45); box-shadow:0 14px 48px rgba(124,58,237,.14); }
+.feat-number{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--p1); margin-bottom:.9rem; }
+.feat-icon{ font-size:1.8rem; margin-bottom:.9rem; display:block; transition:transform .3s; }
+.feat-card:hover .feat-icon{ transform:scale(1.15) rotate(-5deg); }
+.feat-title{ font-size:1.15rem; font-weight:800; margin-bottom:.5rem; }
+.feat-body{ font-size:.85rem; color:rgba(255,255,255,.33); line-height:1.75; }
+
+/* ── POLICY NOTE ───────────────────────────────────────── */
+.policy-note{ display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:rgba(251,191,36,0.04); border:1px solid rgba(251,191,36,0.12); border-radius:6px; font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:rgba(251,191,36,0.45); margin-top:1rem; }
+.policy-note-icon{ font-size:10px; }
+
+/* ── LIBRARY TEASER ────────────────────────────────────── */
+.teaser-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px; margin-top:2rem; max-height:300px; overflow:hidden; mask-image:linear-gradient(to bottom,black 30%,transparent 100%); pointer-events:none; }
+.teaser-card{ aspect-ratio:2/3; border-radius:6px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); overflow:hidden; }
+.teaser-card img{ width:100%; height:100%; object-fit:cover; opacity:0.5; display:block; }
+
+/* ── MILLIONS BANNER ───────────────────────────────────── */
+.millions-banner{ margin-top:1.5rem; padding:14px 22px; background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(59,130,246,.04)); border:1px solid rgba(124,58,237,.18); border-radius:8px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.millions-banner-text{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.35); line-height:1.7; }
+.millions-banner-text strong{ color:rgba(124,58,237,.8); }
+
+/* ══════════════════════════════════════════════════
+   LIBRARY OVERLAY
+════════════════════════════════════════════════════ */
+#library-overlay{ position:fixed; inset:0; z-index:2000; background:rgba(2,2,5,0.98); transform:translateY(100%); transition:transform .7s cubic-bezier(.2,1,.2,1); overflow:hidden; display:flex; flex-direction:column; pointer-events:none; }
+#library-overlay.open{ transform:translateY(0); pointer-events:all; }
+.lib-header{ position:relative; z-index:10; background:rgba(2,2,5,.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--gb); padding:20px 40px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; flex-shrink:0; }
+.lib-title{ font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; letter-spacing:.06em; margin-right:auto; }
+.lib-count{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.28); }
+.lib-search{ flex:1; min-width:180px; max-width:340px; background:rgba(255,255,255,.04); border:1px solid var(--gb); border-radius:8px; padding:12px 18px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.08em; color:#fff; outline:none; transition:border-color .3s, box-shadow .3s; }
+.lib-search:focus{ border-color:var(--p1); box-shadow:0 0 0 3px rgba(124,58,237,.15); }
+.lib-search::placeholder{ color:rgba(255,255,255,.2); }
+.lib-close{ width:42px; height:42px; border-radius:50%; border:1px solid var(--gb); background:transparent; color:rgba(255,255,255,.5); font-size:20px; display:flex; align-items:center; justify-content:center; transition:all .3s; flex-shrink:0; }
+.lib-close:hover{ border-color:var(--p1); color:#fff; background:rgba(124,58,237,.1); transform:scale(1.1) rotate(90deg); }
+.vault-note{ padding:10px 40px; flex-shrink:0; border-bottom:1px solid var(--gb); display:flex; align-items:center; gap:10px; }
+.vault-note-text{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.2); line-height:1.7; }
+.vault-note-text strong{ color:rgba(255,200,50,.35); }
+.vault-note-dot{ width:3px; height:3px; border-radius:50%; background:rgba(251,191,36,.4); flex-shrink:0; }
+.lib-filters{ display:flex; gap:8px; flex-wrap:wrap; padding:14px 40px; border-bottom:1px solid var(--gb); flex-shrink:0; overflow:hidden; }
+.f-chip{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.25em; text-transform:uppercase; padding:7px 16px; border-radius:100px; border:1px solid rgba(255,255,255,.09); color:rgba(255,255,255,.37); transition:all .25s; }
+.f-chip.active,.f-chip:hover{ background:rgba(124,58,237,.15); border-color:var(--p1); color:#fff; }
+.lib-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; padding:28px 40px; -webkit-overflow-scrolling:touch; }
+.lib-body::-webkit-scrollbar{ width:4px; }
+.lib-body::-webkit-scrollbar-thumb{ background:rgba(124,58,237,.4); border-radius:4px; }
+#game-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:14px; }
+.game-card{ border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.02); transition:transform .38s cubic-bezier(.2,1,.2,1), border-color .35s, box-shadow .38s; position:relative; }
+.game-card:hover{ transform:translateY(-9px) scale(1.025); border-color:rgba(124,58,237,.45); box-shadow:0 22px 60px rgba(0,0,0,.55), 0 0 32px rgba(124,58,237,.14); }
+.game-card-img{ width:100%; aspect-ratio:2/3; object-fit:cover; display:block; background:rgba(255,255,255,.04); }
+.game-card-info{ padding:12px 14px 14px; }
+.game-card-name{ font-size:11px; font-weight:700; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:7px; }
+.game-card-meta{ display:flex; align-items:center; gap:7px; }
+.game-card-rating{ font-family:'Space Mono',monospace; font-size:9px; color:var(--p1); }
+.game-card-badge{ font-size:8px; letter-spacing:.12em; text-transform:uppercase; background:rgba(124,58,237,.13); border:1px solid rgba(124,58,237,.22); border-radius:4px; padding:2px 7px; color:rgba(255,255,255,.45); }
+.badge-free{ background:rgba(74,222,128,.09); border-color:rgba(74,222,128,.2); color:#4ade80; }
+.game-card-players{ margin-top:5px; font-family:'Space Mono',monospace; font-size:8px; color:rgba(255,255,255,.18); letter-spacing:.08em; }
+.game-card-overlay{ position:absolute; inset:0; background:linear-gradient(to top,rgba(2,2,5,.92) 0%,transparent 55%); opacity:0; transition:opacity .35s; display:flex; align-items:flex-end; padding:14px; }
+.game-card:hover .game-card-overlay{ opacity:1; }
+.game-card-play{ width:100%; text-align:center; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.28em; text-transform:uppercase; color:#fff; background:var(--p1); padding:10px; border-radius:6px; transition:background .2s; }
+.skeleton-card{ border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.05); }
+.skeleton-img{ width:100%; aspect-ratio:2/3; background:linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.03) 75%); background-size:200% 100%; animation:shimmer 1.6s infinite; }
+.skeleton-line{ margin:12px 14px 4px; height:10px; border-radius:4px; background:rgba(255,255,255,.04); animation:shimmer 1.6s infinite; }
+.skeleton-line.short{ width:60%; height:8px; margin-bottom:14px; }
+@keyframes shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.load-more-btn{ display:flex; align-items:center; gap:12px; margin:36px auto 20px; padding:14px 40px; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.35em; text-transform:uppercase; border:1px solid var(--gb); border-radius:6px; background:transparent; color:rgba(255,255,255,.4); transition:all .3s; }
+.load-more-btn:hover{ border-color:var(--p1); color:#fff; background:rgba(124,58,237,.08); }
+.vault-stat-bar{ display:flex; align-items:center; justify-content:center; gap:48px; flex-wrap:wrap; padding:28px 40px; border-top:1px solid var(--gb); background:rgba(124,58,237,.025); flex-shrink:0; }
+.vault-stat{ text-align:center; transition:transform .3s; }
+.vault-stat:hover{ transform:translateY(-3px); }
+.vault-stat-n{ font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:var(--p1); }
+.vault-stat-l{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.25); margin-top:4px; }
+#no-results{ display:none; grid-column:1/-1; text-align:center; padding:80px 20px; }
+#no-results p{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.2); }
+
+/* ── PRICING GRID ──────────────────────────────────────── */
+.pricing-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.4rem; width:100%; margin-top:2.8rem; align-items:start; }
+.pricing-hero{ transform:translateY(-18px); }
+@media(max-width:900px){ .pricing-hero{ transform:none; } }
+.pt-card{ position:relative; background:var(--surface); border:1px solid var(--gb); border-radius:16px; padding:2.4rem; overflow:hidden; transform-style:preserve-3d; transition:border-color .35s, box-shadow .35s; }
+.pt-card::before{ content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(124,58,237,0.04) 0%,transparent 70%); border-radius:16px; pointer-events:none; }
+.pt-card:hover{ border-color:rgba(124,58,237,.35); box-shadow:0 14px 50px rgba(0,0,0,.4); }
+.pt-card.hero{ border-color:rgba(124,58,237,.5); background:linear-gradient(160deg,rgba(124,58,237,.1) 0%,rgba(59,130,246,.04) 60%,rgba(255,255,255,.025) 100%); }
+.pt-card.hero::after{ content:''; position:absolute; inset:-1px; border:1.5px solid var(--p1); border-radius:16px; pointer-events:none; animation:neon-pulse 2.2s infinite; }
+.pt-x{ opacity:.28; text-decoration:line-through; }
+.pt-badge{ display:inline-block; font-family:'Space Mono',monospace; font-size:7.5px; letter-spacing:.32em; text-transform:uppercase; padding:5px 14px; border-radius:100px; margin-bottom:1.6rem; }
+.pt-badge.purple{ background:linear-gradient(135deg,var(--p1),var(--p2)); color:#fff; }
+.pt-badge.green{ background:rgba(74,222,128,.15); border:1px solid rgba(74,222,128,.3); color:#4ade80; }
+.pt-badge.amber{ background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.25); color:rgba(251,191,36,.8); }
+.pt-badge.dim{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.28); }
+.pt-name{ font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; line-height:1; margin-bottom:.3rem; }
+.pt-sub{ font-family:'Space Mono',monospace; font-size:8.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.25); margin-bottom:1.6rem; }
+.pt-price{ font-family:'Syne',sans-serif; font-size:2.6rem; font-weight:800; color:var(--p1); line-height:1; }
+.pt-price.hero-price{ background:linear-gradient(110deg,#fff 0%,var(--p1) 50%,var(--p2) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-size:3.2rem; }
+.pt-price-was{ font-family:'Space Mono',monospace; font-size:9px; color:rgba(255,255,255,.22); text-decoration:line-through; letter-spacing:.15em; margin-bottom:.2rem; }
+.pt-price-note{ font-family:'Space Mono',monospace; font-size:8px; color:rgba(255,255,255,.25); letter-spacing:.18em; text-transform:uppercase; margin-top:.3rem; margin-bottom:1.8rem; }
+.pt-savings{ display:inline-flex; align-items:center; gap:6px; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.22); border-radius:6px; padding:5px 12px; margin-bottom:1.8rem; font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:#4ade80; }
+.pt-divider{ height:1px; background:rgba(255,255,255,.06); margin:1.4rem 0; }
+.pt-features{ list-style:none; display:flex; flex-direction:column; gap:.75rem; margin-bottom:2rem; }
+.pt-features li{ font-size:.82rem; color:rgba(255,255,255,.55); display:flex; align-items:flex-start; gap:10px; line-height:1.5; transition:color .2s, transform .2s; }
+.pt-features li:not(.pt-x):hover{ color:rgba(255,255,255,.88); transform:translateX(3px); }
+.pt-icon{ font-size:.75rem; flex-shrink:0; margin-top:2px; }
+.pt-icon.check{ color:var(--p1); }
+.pt-icon.cross{ color:rgba(255,255,255,.18); }
+.pt-icon.star{ color:#fbbf24; }
+.pt-value-pill{ display:block; text-align:center; margin-bottom:1.2rem; font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.25); }
+.pt-value-pill span{ display:inline-block; padding:4px 14px; border-radius:100px; background:rgba(74,222,128,.07); border:1px solid rgba(74,222,128,.15); color:rgba(74,222,128,.7); }
+.pricing-compare{ margin-top:2.4rem; padding:1.8rem 2.2rem; background:rgba(124,58,237,.04); border:1px solid rgba(124,58,237,.14); border-radius:12px; width:100%; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.22); text-align:center; line-height:2; }
+.pricing-compare strong{ color:rgba(124,58,237,.7); }
+
+/* ── NAV LINKS ─────────────────────────────────────────── */
+.nav-link{ transition:color .2s, text-shadow .2s; }
+.nav-link:hover{ color:#fff !important; text-shadow:0 0 20px rgba(124,58,237,.5); }
+
+/* ── LIB CTA BANNER ────────────────────────────────────── */
+.lib-cta-banner{ margin-top:3rem; width:100%; padding:48px; background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(59,130,246,.06)); border:1px solid rgba(124,58,237,.25); border-radius:16px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; position:relative; overflow:hidden; transition:border-color .3s, box-shadow .3s; }
+.lib-cta-banner:hover{ border-color:rgba(124,58,237,.4); box-shadow:0 10px 40px rgba(124,58,237,.1); }
+.card-ripple{ position:absolute; border-radius:50%; background:rgba(124,58,237,.18); pointer-events:none; transform:translate(-50%,-50%) scale(0); animation:card-ripple-out .6s cubic-bezier(.2,1,.2,1) forwards; }
+@keyframes card-ripple-out{ to{ transform:translate(-50%,-50%) scale(8); opacity:0; } }
+
+/* ══════════════════════════════════════════════════
+   FULL-SCREEN CHAT OVERLAY
+════════════════════════════════════════════════════ */
+#chat-bubble{
+  position:fixed; bottom:32px; right:32px; z-index:3000;
+  width:58px; height:58px; border-radius:50%;
+  background:linear-gradient(135deg,var(--p1),var(--p2));
+  display:flex; align-items:center; justify-content:center;
+  cursor:none !important; box-shadow:0 8px 32px rgba(124,58,237,.55);
+  transition:transform .3s, box-shadow .3s;
+  animation:chat-pulse 3s ease-in-out infinite;
+}
+@keyframes chat-pulse{ 0%,100%{ box-shadow:0 8px 32px rgba(124,58,237,.55); } 50%{ box-shadow:0 8px 52px rgba(124,58,237,.85), 0 0 0 8px rgba(124,58,237,.12); } }
+#chat-bubble:hover{ transform:scale(1.1); }
+#chat-bubble svg{ width:26px; height:26px; fill:#fff; }
+#chat-bubble .chat-notif{ position:absolute; top:-4px; right:-4px; width:18px; height:18px; background:#4ade80; border-radius:50%; border:2px solid var(--bg); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:var(--bg); font-family:'Space Mono',monospace; animation:pulse-dot 2s infinite; }
+
+/* FULL SCREEN CHAT PANEL */
+#chat-panel{
+  position:fixed; inset:0; z-index:2999;
+  background:rgba(2,2,5,0.97);
+  display:flex;
+  pointer-events:none; opacity:0;
+  transform:translateY(30px) scale(0.97);
+  transition:opacity .4s cubic-bezier(.2,1,.2,1), transform .4s cubic-bezier(.2,1,.2,1);
+  backdrop-filter:blur(24px);
+}
+#chat-panel.open{ pointer-events:all; opacity:1; transform:translateY(0) scale(1); }
+
+/* LEFT: Chat area 70% */
+.chat-left{
+  flex:0 0 70%;
+  display:flex;
+  flex-direction:column;
+  border-right:1px solid rgba(255,255,255,.06);
+  min-width:0;
+}
+
+/* RIGHT: Prompts 30% */
+.chat-right{
+  flex:0 0 30%;
+  display:flex;
+  flex-direction:column;
   overflow:hidden;
-  background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(59,130,246,0.08));
-  border-top:1px solid var(--glass-border);
-}
-.cta-glow{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:600px;height:600px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(124,58,237,0.15),transparent 70%);
-  pointer-events:none;
-}
-.cta-heading{
-  font-family:'Syne',sans-serif;
-  font-size:clamp(2.5rem,6vw,5rem);
-  font-weight:800;
-  letter-spacing:-0.02em;
-  position:relative;z-index:1;
-}
-.cta-sub{
-  font-size:1rem;
-  color:var(--text-muted);
-  margin-top:20px;
-  position:relative;z-index:1;
-}
-.cta-actions{
-  display:flex;align-items:center;justify-content:center;
-  gap:20px;
-  margin-top:48px;
-  position:relative;z-index:1;
+  background:rgba(124,58,237,.025);
+  min-width:0;
 }
 
-/* ─── FOOTER ─── */
-footer{
-  padding:80px;
-  border-top:1px solid var(--glass-border);
-  background:rgba(0,0,0,0.3);
+/* Chat header */
+.chat-header{ display:flex; align-items:center; gap:12px; padding:20px 28px; border-bottom:1px solid rgba(255,255,255,.06); background:rgba(124,58,237,.07); flex-shrink:0; }
+.chat-avatar{ width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--p1),var(--p2)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; position:relative; }
+.chat-avatar-dot{ position:absolute; bottom:1px; right:1px; width:10px; height:10px; background:#4ade80; border-radius:50%; border:2px solid rgba(2,2,5,.97); }
+.chat-header-info{ flex:1; }
+.chat-header-name{ font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
+.chat-header-status{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.18em; text-transform:uppercase; color:#4ade80; margin-top:2px; }
+.chat-close-btn{ width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.1); background:transparent; color:rgba(255,255,255,.4); font-size:18px; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
+.chat-close-btn:hover{ border-color:var(--p1); color:#fff; background:rgba(124,58,237,.15); }
+
+/* Context badge */
+#chat-context-badge{ margin:14px 28px 0; padding:9px 16px; background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.22); border-radius:8px; font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.18em; text-transform:uppercase; color:rgba(124,58,237,.8); display:none; flex-shrink:0; }
+
+/* Messages */
+.chat-messages{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; padding:20px 28px; display:flex; flex-direction:column; gap:14px; -webkit-overflow-scrolling:touch; }
+.chat-messages::-webkit-scrollbar{ width:3px; }
+.chat-messages::-webkit-scrollbar-thumb{ background:rgba(124,58,237,.35); border-radius:3px; }
+.chat-msg{ display:flex; gap:10px; max-width:85%; animation:msg-in .3s cubic-bezier(.2,1,.2,1); }
+@keyframes msg-in{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+.chat-msg.user{ align-self:flex-end; flex-direction:row-reverse; }
+.chat-msg.bot{ align-self:flex-start; }
+.msg-avatar{ width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:2px; }
+.bot .msg-avatar{ background:linear-gradient(135deg,var(--p1),var(--p2)); }
+.user .msg-avatar{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); }
+.msg-bubble{ padding:14px 18px; border-radius:14px; font-size:.875rem; line-height:1.8; max-width:100%; }
+.bot .msg-bubble{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:4px 14px 14px 14px; color:rgba(255,255,255,.85); }
+.user .msg-bubble{ background:linear-gradient(135deg,var(--p1),var(--p2)); border-radius:14px 4px 14px 14px; color:#fff; }
+
+/* Chat tooltip */
+.chat-tooltip{ position:fixed; bottom:102px; right:32px; z-index:2998; background:rgba(20,10,40,0.96); border:1px solid rgba(124,58,237,.4); color:#fff; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.18em; padding:9px 16px; border-radius:8px; pointer-events:none; opacity:0; transform:translateY(6px); transition:opacity .3s, transform .3s; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+.chat-tooltip::after{ content:''; position:absolute; bottom:-5px; right:22px; width:8px; height:8px; background:rgba(20,10,40,0.96); border-right:1px solid rgba(124,58,237,.4); border-bottom:1px solid rgba(124,58,237,.4); transform:rotate(45deg); }
+.chat-tooltip.show{ opacity:1; transform:translateY(0); }
+
+/* ══════════════════════════════════════════════════
+   TOPIC SCREEN — main hub when chat first opens
+════════════════════════════════════════════════════ */
+#topic-screen{
+  flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
+  overscroll-behavior:contain; padding:24px 28px;
+  display:flex; flex-direction:column; gap:12px;
 }
-.footer-grid{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr;
-  gap:64px;
-  max-width:1400px;
-  margin:0 auto;
+#topic-screen::-webkit-scrollbar{ width:3px; }
+#topic-screen::-webkit-scrollbar-thumb{ background:rgba(124,58,237,.35); border-radius:3px; }
+
+.topic-intro{
+  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:rgba(255,255,255,.28); margin-bottom:4px;
 }
-.footer-brand{
-  font-family:'Syne',sans-serif;
-  font-size:1.5rem;font-weight:800;
-  background:linear-gradient(90deg,#a78bfa,#60a5fa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  margin-bottom:16px;
+.topic-card{
+  display:flex; align-items:center; gap:14px;
+  padding:16px 18px; border-radius:12px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  transition:all .25s; position:relative; overflow:hidden;
+  animation:topic-in .35s cubic-bezier(.2,1,.2,1) both;
 }
-.footer-tagline{
-  font-size:0.82rem;
-  color:var(--text-sub);
-  line-height:1.7;
-  max-width:280px;
+@keyframes topic-in{ from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.topic-card:hover{
+  border-color:rgba(124,58,237,.5);
+  background:rgba(124,58,237,.08);
+  transform:translateX(4px);
 }
-.footer-col-title{
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.25em;
-  text-transform:uppercase;
-  color:rgba(167,139,250,0.5);
-  margin-bottom:24px;
+.topic-card:active{ transform:scale(0.98); }
+.topic-emoji{ font-size:1.5rem; flex-shrink:0; }
+.topic-info{ flex:1; }
+.topic-title{ font-family:'Syne',sans-serif; font-size:.95rem; font-weight:800; margin-bottom:2px; }
+.topic-sub{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.28); }
+.topic-arrow{ color:rgba(124,58,237,.6); font-size:1.1rem; flex-shrink:0; transition:transform .2s; }
+.topic-card:hover .topic-arrow{ transform:translateX(4px); }
+
+/* Special: Talk to Human */
+.topic-card.human{
+  border-color:rgba(37,211,102,.2);
+  background:rgba(37,211,102,.04);
 }
-.footer-links{display:flex;flex-direction:column;gap:12px;}
-.footer-link{
-  font-size:0.82rem;
-  color:var(--text-sub);
-  text-decoration:none;
-  transition:color 0.2s;
+.topic-card.human:hover{
+  border-color:rgba(37,211,102,.5);
+  background:rgba(37,211,102,.1);
 }
-.footer-link:hover{color:rgba(167,139,250,0.8);}
-.footer-bottom{
-  display:flex;justify-content:space-between;align-items:center;
-  padding-top:48px;
-  margin-top:48px;
-  border-top:1px solid var(--glass-border);
-  max-width:1400px;
-  margin-left:auto;
-  margin-right:auto;
+.topic-card.human .topic-arrow{ color:rgba(37,211,102,.7); }
+
+/* Back button */
+.chat-back-btn{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 28px; border-bottom:1px solid rgba(255,255,255,.06);
+  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.25em;
+  text-transform:uppercase; color:rgba(255,255,255,.35);
+  transition:color .2s; background:transparent; border-left:none; border-right:none; border-top:none;
+  width:100%; text-align:left;
 }
-.footer-copy{
-  font-size:0.65rem;letter-spacing:0.15em;
-  color:var(--text-sub);
+.chat-back-btn:hover{ color:var(--p1); }
+.chat-back-btn-icon{ font-size:1rem; }
+
+/* RIGHT PANEL — Prompts */
+.prompts-header{ padding:20px 24px 14px; border-bottom:1px solid rgba(255,255,255,.06); flex-shrink:0; }
+.prompts-pkg-label{ font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.3em; text-transform:uppercase; color:var(--p1); margin-bottom:6px; }
+.prompts-title{ font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
+.prompts-hint{ font-family:'Space Mono',monospace; font-size:7.5px; letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.2); margin-top:4px; }
+
+.prompts-body{ flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:16px 20px; display:flex; flex-direction:column; gap:8px; }
+.prompts-body::-webkit-scrollbar{ width:3px; }
+.prompts-body::-webkit-scrollbar-thumb{ background:rgba(124,58,237,.3); border-radius:3px; }
+
+/* Pill prompt buttons */
+.prompt-pill{
+  display:block; width:100%; text-align:left;
+  padding:12px 16px; border-radius:12px;
+  border:1px solid rgba(124,58,237,.2);
+  background:rgba(124,58,237,.04);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:.8rem;
+  color:rgba(255,255,255,.65);
+  transition:all .22s; line-height:1.45;
+  animation:pill-in .3s cubic-bezier(.2,1,.2,1) both;
 }
-.footer-made{
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.15em;
-  color:var(--text-sub);
+@keyframes pill-in{ from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+.prompt-pill:hover{ border-color:var(--p1); color:#fff; background:rgba(124,58,237,.14); transform:translateX(-3px); }
+.prompt-pill:active{ transform:scale(0.97); }
+.prompt-pill.used{ opacity:.35; border-color:rgba(255,255,255,.06); }
+
+/* No-input note */
+.chat-no-input-note{
+  padding:14px 28px; border-top:1px solid rgba(255,255,255,.06);
+  font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.2em;
+  text-transform:uppercase; color:rgba(255,255,255,.18);
+  text-align:center; flex-shrink:0;
+  background:rgba(0,0,0,.15);
 }
 
-/* ─── SHARED SECTION REVEAL ─── */
-.reveal{
-  opacity:0;
-  transform:translateY(30px);
-  transition:opacity 0.8s ease, transform 0.8s ease;
+/* Responsive */
+@media(max-width:700px){
+  .chat-left{ flex:1; }
+  .chat-right{ display:none; }
 }
-.reveal.visible{
-  opacity:1;
-  transform:translateY(0);
-}
-
-/* ─── DIVIDER ─── */
-.section-divider{
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(124,58,237,0.3),rgba(59,130,246,0.3),transparent);
-  margin:0 80px;
-}
-
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-track{background:#03030b;}
-::-webkit-scrollbar-thumb{background:linear-gradient(#7c3aed,#3b82f6);border-radius:999px;}
-
 </style>
 </head>
-
 <body>
 
-<!-- ── LOADER ── -->
-<div id="loader">
-  <div id="loader-text">VELOCITY</div>
-  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
-  <div id="loader-sub">INITIALIZING SYSTEM . . .</div>
-</div>
-
-<!-- ── CANVAS ── -->
-<canvas id="particles"></canvas>
-<div id="glow"></div>
-<div id="ambient"></div>
-
-<!-- ── CURSOR ── -->
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+<div class="ambient-orb orb-3"></div>
+<div id="cursor-aura"></div>
 <div id="cursor-dot"></div>
 <div id="cursor-ring"></div>
 
-<!-- ── NAV ── -->
-<nav id="navbar">
-  <div class="nav-logo">VELOCITY</div>
-  <div class="nav-links">
-    <a href="#hero"         class="nav-link">Home</a>
-    <a href="#vision"       class="nav-link">Vision</a>
-    <a href="#features"     class="nav-link">Features</a>
-    <a href="#specs"        class="nav-link">System</a>
-    <a href="#pricing"      class="nav-link">Access</a>
-    <a href="#pricing"      class="nav-cta">Get Access</a>
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav style="position:fixed;top:0;width:100%;padding:32px 40px;z-index:500;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(2,2,5,.75),transparent);">
+  <div style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.42em;font-size:13px;">VELOCITY</div>
+  <div class="hidden md:flex" style="gap:40px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.32);">
+    <a href="#hero" class="nav-link" style="color:rgba(255,255,255,.32)">Launch</a>
+    <a href="#features" class="nav-link" style="color:rgba(255,255,255,.32)">Features</a>
+    <a href="#how" class="nav-link" style="color:rgba(255,255,255,.32)">How It Works</a>
+    <a href="#pricing" class="nav-link" style="color:rgba(255,255,255,.32)">Pricing</a>
+    <a href="#speed" class="nav-link" style="color:rgba(255,255,255,.32)">Service DNA</a>
+    <a href="#contact" class="nav-link" style="color:rgba(255,255,255,.32)">Contact</a>
   </div>
+  <button onclick="openLibrary()" id="nav-library-btn" style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.28em;text-transform:uppercase;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:rgba(255,255,255,.7);padding:9px 18px;border-radius:6px;transition:all .3s;">Browse Library ↗</button>
 </nav>
 
-<!-- ══════════════════════════════════════════════════ -->
-<!-- HERO -->
-<!-- ══════════════════════════════════════════════════ -->
+<!-- ═══════════════ HERO ═══════════════ -->
 <section id="hero">
-  <div class="hero-grid"></div>
-  <div>
-    <div class="hero-tag">Pakistan's First Gaming OS</div>
-    <h1 class="hero-heading">VELO<br>CITY</h1>
-    <p class="hero-sub">One system. Lifetime control. Infinite performance. Built for those who demand more from every frame, every second.</p>
-    <div class="hero-actions">
-      <button class="btn-primary"><span>ENTER SYSTEM</span></button>
-      <button class="btn-secondary">LEARN MORE</button>
+  <div class="fc-container">
+    <div class="fc" style="max-width:1020px;margin:0 auto;padding:72px;">
+      <div class="fc-glow"></div>
+      <div class="hero-badge"><div class="hero-badge-dot"></div>Service Online — Zero Latency Detected</div>
+      <span class="eyebrow">> Service_Initialized // Build_2025</span>
+      <h1 class="h-xl g-text">ANY GAME.<br>TEN SECONDS.</h1>
+      <p style="margin-top:2.2rem;font-size:1.05rem;line-height:1.85;color:rgba(255,255,255,.33);max-width:500px;">The ultimate gaming service. Every Steam title — delivered to your machine through zero-latency infrastructure. No downloads, no patch waits, no install queues.</p>
+      <div style="margin-top:2.4rem;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+        <button class="cta-primary mag-btn" onclick="openLibrary()"><span>Explore Full Library</span><span class="cta-arrow">→</span></button>
+        <a href="#how" class="cta-ghost mag-btn">How It Works</a>
+      </div>
+      <div class="stat-line" style="margin-top:3rem;">
+        <div class="stat-item"><div class="stat-num">50,000+</div><div class="stat-label">Games Available</div></div>
+        <div class="stat-item"><div class="stat-num">9.8s</div><div class="stat-label">Avg. Deploy Time</div></div>
+        <div class="stat-item"><div class="stat-num">1</div><div class="stat-label">Click to Play</div></div>
+        <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Lifetime Access</div></div>
+      </div>
+      <div class="millions-banner">
+        <span style="font-size:1.1rem;">🎮</span>
+        <div class="millions-banner-text">The games shown are just a <strong>sample showcase</strong> — your vault includes the <strong>entire Steam catalog</strong>. Millions of titles, every genre, every era. If it's on Steam, it's on Velocity.</div>
+      </div>
+      <div class="teaser-grid" id="teaser-grid"></div>
     </div>
   </div>
-  <div class="scroll-hint">
-    <div class="scroll-hint-line"></div>
-    SCROLL TO EXPLORE
-  </div>
+  <div class="scroll-indicator"><div class="scroll-line"></div>Scroll</div>
 </section>
 
-<!-- ══════════════════════════════════════════════════ -->
-<!-- STATS -->
-<!-- ══════════════════════════════════════════════════ -->
-<div id="stats">
-  <div class="stats-grid">
-    <div class="stat-item reveal">
-      <div class="stat-number" data-count="5000">0</div>
-      <div class="stat-label">Active Users</div>
-    </div>
-    <div class="stat-item reveal" style="transition-delay:0.1s">
-      <div class="stat-number" data-count="99">0</div>
-      <div class="stat-label">Uptime %</div>
-    </div>
-    <div class="stat-item reveal" style="transition-delay:0.2s">
-      <div class="stat-number" data-prefix="₨">5000</div>
-      <div class="stat-label">One Time Cost</div>
-    </div>
-    <div class="stat-item reveal" style="transition-delay:0.3s">
-      <div class="stat-number" data-count="1">0</div>
-      <div class="stat-label">First in Pakistan</div>
-    </div>
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><div class="marquee-dot"></div>Zero Downloads</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>10 Second Launch</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Steam Integration</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>50,000+ Games</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Lifetime Access</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Pakistani Nodes</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Millions of Titles</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Pay Once Play Forever</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Zero Downloads</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>10 Second Launch</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Steam Integration</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>50,000+ Games</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Lifetime Access</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Pakistani Nodes</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Millions of Titles</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Pay Once Play Forever</div>
   </div>
 </div>
 
-<!-- SYSTEM TICKER -->
-<div class="system-line">
-  <div class="system-ticker">
-    <span>VELOCITY SYSTEM <strong>v2.4.1</strong></span>
-    <span>——</span>
-    <span>LIFETIME ACCESS <strong>ACTIVE</strong></span>
-    <span>——</span>
-    <span>ZERO SUBSCRIPTIONS</span>
-    <span>——</span>
-    <span>PREMIUM GAMING OS</span>
-    <span>——</span>
-    <span>FIRST IN <strong>PAKISTAN</strong></span>
-    <span>——</span>
-    <span>VELOCITY SYSTEM <strong>v2.4.1</strong></span>
-    <span>——</span>
-    <span>LIFETIME ACCESS <strong>ACTIVE</strong></span>
-    <span>——</span>
-    <span>ZERO SUBSCRIPTIONS</span>
-    <span>——</span>
-    <span>PREMIUM GAMING OS</span>
-    <span>——</span>
-    <span>FIRST IN <strong>PAKISTAN</strong></span>
-    <span>——</span>
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section id="features" style="flex-direction:column;align-items:flex-start;">
+  <div style="width:100%;margin-bottom:56px;">
+    <span class="eyebrow">What We Deliver</span>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:800;line-height:1.05;">Built Different.<br><span class="g-text">Designed for Gamers.</span></h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feat-card"><span class="feat-icon">♾️</span><div class="feat-number">01</div><div class="feat-title">Lifetime Membership</div><p class="feat-body">Access our entire game routing network for life. Pay once, play forever. No subscriptions. No renewals. No surprise charges.</p></div>
+    <div class="feat-card"><span class="feat-icon">⚡</span><div class="feat-number">02</div><div class="feat-title">Pure Performance</div><p class="feat-body">Because we deliver games directly through our service, we bypass traditional bloat entirely. Zero CPU waste. No background updaters.</p></div>
+    <div class="feat-card"><span class="feat-icon">🇵🇰</span><div class="feat-number">03</div><div class="feat-title">Pakistani Nodes</div><p class="feat-body">Local infrastructure means sub-10ms pings across Pakistan. Built for this region — Karachi, Lahore, Islamabad, Quetta covered.</p></div>
+    <div class="feat-card"><span class="feat-icon">🚫</span><div class="feat-number">04</div><div class="feat-title">Zero DRM Friction</div><p class="feat-body">No Denuvo. No invasive DRM. Every title in our vault runs clean. We believe you own what you pay for.</p></div>
+    <div class="feat-card"><span class="feat-icon">📦</span><div class="feat-number">05</div><div class="feat-title">Instant Deploy</div><p class="feat-body">Our service routes game data directly to your machine in under 10 seconds. Click play. That's literally it.</p></div>
+    <div class="feat-card"><span class="feat-icon">🔄</span><div class="feat-number">06</div><div class="feat-title">Always Updated</div><p class="feat-body">Games on our network are always on the latest version. No manual patches. No waiting for updates.</p></div>
+    <div class="feat-card"><span class="feat-icon">🌐</span><div class="feat-number">07</div><div class="feat-title">Full Steam Catalog</div><p class="feat-body">Our vault mirrors the complete eligible Steam library. From AAA blockbusters to hidden indie gems, all on demand.</p><div class="policy-note"><span class="policy-note-icon">⚖</span><span>Titles with Denuvo or kernel-level DRM excluded for performance</span></div></div>
+    <div class="feat-card"><span class="feat-icon">🎮</span><div class="feat-number">08</div><div class="feat-title">Millions of Titles</div><p class="feat-body">Every genre, every era, every platform. If it's on Steam, it's in your vault. Unlimited gaming, forever.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section id="how" style="flex-direction:column;align-items:flex-start;">
+  <div style="width:100%;margin-bottom:56px;">
+    <span class="eyebrow">The Process</span>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:800;line-height:1.05;">Three steps.<br><span class="g-text">Infinite games.</span></h2>
+  </div>
+  <div class="step-wrap">
+    <div class="step-card"><div class="step-num">01</div><div><div class="step-title" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:.6rem;">Get Lifetime Access</div><p class="step-body">Contact us once. Pay once. Your machine gets linked to our service network permanently. No account maintenance. No renewal stress. Just access, forever.</p></div></div>
+    <div class="step-card"><div class="step-num">02</div><div><div class="step-title" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:.6rem;">Browse Millions of Titles</div><p class="step-body">Open our game vault. Search. Filter by genre, rating, players. The entire Steam library — from AAA blockbusters to indie gems — available instantly.</p></div></div>
+    <div class="step-card"><div class="step-num">03</div><div><div class="step-title" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:.6rem;">Click. 10 Seconds. Play.</div><p class="step-body">Our service routes the game directly to your hardware. No downloading. No installing. No waiting. In under 10 seconds, you're in the game.</p></div></div>
+  </div>
+  <div class="lib-cta-banner">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 10% 50%,rgba(124,58,237,.08),transparent 60%);pointer-events:none;"></div>
+    <div style="position:relative;z-index:1;">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.4em;text-transform:uppercase;color:var(--p1);margin-bottom:.7rem;">The Entire Steam Catalog — Yours</div>
+      <div style="font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;line-height:1.1;">Ready to explore the full vault?</div>
+      <p style="font-size:.85rem;color:rgba(255,255,255,.35);margin-top:.5rem;max-width:420px;">The showcase is just a glimpse. Millions of titles are waiting.</p>
+    </div>
+    <button onclick="openLibrary()" class="cta-primary mag-btn" style="position:relative;z-index:1;flex-shrink:0;"><span>Open Game Library</span><span class="cta-arrow">→</span></button>
+  </div>
+</section>
+
+<!-- ═══════════════ PRICING ═══════════════ -->
+<section id="pricing" style="flex-direction:column;align-items:center;">
+  <div style="text-align:center;margin-bottom:16px;width:100%;">
+    <span class="eyebrow">Choose Your Plan</span>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:800;line-height:1.05;">Pay Once.<br><span class="g-text">Play Forever.</span></h2>
+    <p style="margin-top:1rem;font-size:.95rem;color:rgba(255,255,255,.3);max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8;">No subscriptions. No monthly fees. One payment — pick how much help you want. Every plan includes full vault access forever.</p>
+    <div style="display:inline-flex;align-items:center;gap:18px;margin-top:1.8rem;padding:16px 28px;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.14);border-radius:10px;flex-wrap:wrap;justify-content:center;max-width:680px;">
+      <div style="font-size:1.4rem;">⚖️</div>
+      <div style="text-align:left;">
+        <div style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:rgba(251,191,36,.5);margin-bottom:.3rem;">Market Reality Check</div>
+        <div style="font-size:.85rem;color:rgba(255,255,255,.35);line-height:1.7;">Buying games individually on Steam costs <strong style="color:rgba(251,191,36,.65);">Rs. 650–3,500+ per title</strong>. Velocity gives you the <strong style="color:rgba(255,255,255,.55);">entire catalog, forever, for less than 2 games.</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pricing-grid">
+
+    <!-- STARTER -->
+    <div class="pt-card" id="pt-starter">
+      <div class="pt-badge dim">⚙ Starter</div>
+      <div class="pt-name">Self-Serve</div>
+      <div class="pt-sub">For the technical ones // DIY everything</div>
+      <div class="pt-price-was">Was Rs. 4,500</div>
+      <div class="pt-price">Rs. 2,999</div>
+      <div class="pt-price-note">one-time payment</div>
+      <div class="pt-divider"></div>
+      <ul class="pt-features">
+        <li><span class="pt-icon check">✓</span> Vault access — millions of Steam titles</li>
+        <li><span class="pt-icon check">✓</span> DRM-free deployment</li>
+        <li><span class="pt-icon check">✓</span> Pakistani node routing</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Software installation (you do it yourself)</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Configuration & setup</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Troubleshooting support</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Lifetime support coverage</li>
+      </ul>
+      <button onclick="openChat('starter')" class="cta-primary mag-btn" style="width:100%;justify-content:center;font-size:9px;"><span>Ask About Starter</span><span class="cta-arrow">→</span></button>
+      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.16);text-align:center;letter-spacing:.12em;line-height:1.7;">⚠ No support included. You're on your own.</div>
+    </div>
+
+    <!-- PRO -->
+    <div class="pt-card" id="pt-pro">
+      <div class="pt-badge amber">🔧 Pro</div>
+      <div class="pt-name">Assisted</div>
+      <div class="pt-sub">We set you up // you're on your own after</div>
+      <div class="pt-price-was">Was Rs. 5,500</div>
+      <div class="pt-price">Rs. 3,999</div>
+      <div class="pt-price-note">one-time payment</div>
+      <div class="pt-divider"></div>
+      <ul class="pt-features">
+        <li><span class="pt-icon check">✓</span> Vault access — millions of Steam titles</li>
+        <li><span class="pt-icon check">✓</span> DRM-free deployment</li>
+        <li><span class="pt-icon check">✓</span> Pakistani node routing</li>
+        <li><span class="pt-icon check">✓</span> <strong style="color:rgba(255,255,255,.75)">We install Velocity for you</strong></li>
+        <li><span class="pt-icon check">✓</span> <strong style="color:rgba(255,255,255,.75)">Full software configuration & setup</strong></li>
+        <li><span class="pt-icon check">✓</span> First-launch game walkthrough</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Ongoing support after setup</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> Lifetime support coverage</li>
+      </ul>
+      <button onclick="openChat('pro')" class="cta-primary mag-btn" style="width:100%;justify-content:center;font-size:9px;"><span>Ask About Pro</span><span class="cta-arrow">→</span></button>
+      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);text-align:center;letter-spacing:.12em;line-height:1.7;">Setup included. But if something breaks later — only Rs. 500 more for Elite.</div>
+    </div>
+
+    <!-- CUSTOM / BUILD YOUR OWN -->
+    <div class="pt-card" id="pt-custom" style="border-color:rgba(124,58,237,.22);">
+      <div class="pt-badge purple">🎮 Custom</div>
+      <div class="pt-name">Build Your Own</div>
+      <div class="pt-sub">You pick the budget or the count // full control</div>
+      <div class="pt-divider"></div>
+
+      <!-- Calculator -->
+      <div class="byo-calc">
+        <div>
+          <label class="byo-label">I have a budget of</label>
+          <div class="byo-input-row">
+            <span class="byo-prefix">Rs.</span>
+            <input type="number" id="byo-budget" class="byo-input" placeholder="5000" min="0" oninput="byoFromBudget(this.value)">
+          </div>
+        </div>
+        <div class="byo-or">— or —</div>
+        <div>
+          <label class="byo-label">I want this many games</label>
+          <div class="byo-input-row">
+            <input type="number" id="byo-games" class="byo-input" placeholder="100" min="0" oninput="byoFromGames(this.value)">
+            <span class="byo-suffix">games</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output rows -->
+      <div class="byo-output" id="byo-output" style="display:none;">
+        <div class="byo-stat-row">
+          <span class="byo-lbl">🎮 Games</span>
+          <span class="byo-num" id="byo-out-games">—</span>
+        </div>
+        <div class="byo-stat-row byo-hl">
+          <span class="byo-lbl">💰 You Pay</span>
+          <span class="byo-num" id="byo-out-price">—</span>
+        </div>
+        <div class="byo-stat-row byo-gr" id="byo-bonus-row">
+          <span class="byo-lbl" id="byo-bonus-label">🎁 Free Bonus</span>
+          <span class="byo-num" id="byo-out-bonus">—</span>
+        </div>
+      </div>
+
+      <!-- Tier hint -->
+      <div class="byo-tier-hint" id="byo-tier-hint"></div>
+
+      <div class="pt-divider"></div>
+      <ul class="pt-features" style="margin-bottom:1.4rem;">
+        <li><span class="pt-icon check">✓</span> Vault access — millions of Steam titles</li>
+        <li><span class="pt-icon check">✓</span> DRM-free deployment</li>
+        <li><span class="pt-icon check">✓</span> Pakistani node routing</li>
+        <li><span class="pt-icon star">★</span> <strong style="color:rgba(255,255,255,.75);">You set the budget — we match it</strong></li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> No guided setup (self-install)</li>
+        <li class="pt-x"><span class="pt-icon cross">✕</span> No ongoing support</li>
+      </ul>
+      <button onclick="openChat('custom')" class="cta-primary mag-btn" style="width:100%;justify-content:center;"><span>Get This Deal</span><span class="cta-arrow">→</span></button>
+      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.18);text-align:center;letter-spacing:.12em;line-height:1.7;">Rs. 45/game — get 5 free for every 15 games you buy</div>
+    </div>
+
+    <!-- ELITE -->
+    <div class="pt-card" id="pricing-tilt" style="border-color:rgba(124,58,237,.3);">
+      <div style="position:absolute;top:0;right:0;background:rgba(124,58,237,.25);border:1px solid rgba(124,58,237,.4);font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.32em;text-transform:uppercase;padding:6px 18px;border-radius:0 16px 0 10px;color:rgba(255,255,255,.7);font-weight:700;">🔒 LIFETIME SUPPORT</div>
+      <div class="pt-badge green">🚀 Elite</div>
+      <div class="pt-name">Managed</div>
+      <div class="pt-sub">We do everything // you just play</div>
+      <div class="pt-price-was">Was Rs. 7,000</div>
+      <div class="pt-price hero-price">Rs. 4,499</div>
+      <div class="pt-price-note">one-time // lifetime coverage</div>
+      <div class="pt-savings">🎯 Only Rs. 500 more than Pro — support never expires</div>
+      <div class="pt-divider"></div>
+      <ul class="pt-features">
+        <li><span class="pt-icon check">✓</span> Vault access — millions of Steam titles</li>
+        <li><span class="pt-icon check">✓</span> DRM-free deployment</li>
+        <li><span class="pt-icon check">✓</span> Pakistani node priority routing</li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">We install Velocity on your PC</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Full config & performance optimisation</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Guided first-session game launch</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">LIFETIME troubleshooting support</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Priority WhatsApp response</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Free re-setup if you change PCs</strong></li>
+      </ul>
+      <div class="pt-value-pill">For just <span>Rs. 500 more than Pro</span> — support never ends</div>
+      <button onclick="openChat('elite')" class="cta-primary mag-btn" style="width:100%;justify-content:center;"><span>Ask About Elite</span><span class="cta-arrow">→</span></button>
+      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.25);text-align:center;letter-spacing:.12em;line-height:1.7;">Or go VIP — only Rs. 500 more for the full experience</div>
+    </div>
+
+    <!-- VIP -->
+    <div class="pt-card hero pricing-hero" id="pt-vip">
+      <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,var(--p1),var(--p2));font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.32em;text-transform:uppercase;padding:6px 18px;border-radius:0 16px 0 10px;color:#fff;font-weight:700;">⭐ BEST VALUE</div>
+      <div class="pt-badge purple">👑 VIP</div>
+      <div class="pt-name" style="background:linear-gradient(110deg,#fff,var(--p1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Concierge</div>
+      <div class="pt-sub">The full white-glove experience // nothing left out</div>
+      <div class="pt-price-was">Was Rs. 9,000</div>
+      <div class="pt-price hero-price">Rs. 4,999</div>
+      <div class="pt-price-note">one-time // everything included forever</div>
+      <div class="pt-savings">🎯 Only Rs. 500 more than Elite — the full experience</div>
+      <div class="pt-divider"></div>
+      <ul class="pt-features">
+        <li><span class="pt-icon check">✓</span> Everything in Elite, plus:</li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Personal setup via voice/video call</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Controller & peripheral configuration</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Graphics tuned for your hardware specs</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Transferable — pass to a family member</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">Within-1-hour priority response guarantee</strong></li>
+        <li><span class="pt-icon star">★</span> <strong style="color:#fff;">VIP WhatsApp group access</strong></li>
+      </ul>
+      <div class="pt-value-pill">For just <span>Rs. 500 more than Elite</span> — the complete package</div>
+      <button onclick="openChat('vip')" class="cta-primary mag-btn" style="width:100%;justify-content:center;"><span>Get VIP Access</span><span class="cta-arrow">→</span></button>
+      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:8px;color:rgba(124,58,237,.65);text-align:center;letter-spacing:.12em;">✓ The complete Velocity experience — nothing missing</div>
+    </div>
+
+  </div>
+
+  <div class="pricing-compare">
+    🎯 &nbsp;<strong>The math:</strong>&nbsp; Pro = Rs. 3,999, setup only, zero support after.&nbsp;
+    Elite = Rs. 4,499 — <strong>Rs. 500 more</strong> — lifetime support included.&nbsp;
+    VIP = Rs. 4,999 — <strong>Rs. 500 more than Elite</strong> — voice setup, hardware tuning, family transfer, 1-hour response.&nbsp;
+    <strong>Most buyers pick VIP.</strong>
+  </div>
+</section>
+
+<!-- ═══════════════ SPEED / SERVICE DNA ═══════════════ -->
+<section id="speed">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;width:100%;">
+    <div class="fc-container">
+      <div class="fc">
+        <div class="fc-glow"></div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;margin-bottom:1.8rem;line-height:1.1;">No Waiting.<br><span class="g-text">Just Playing.</span></h3>
+        <p style="color:rgba(255,255,255,.33);line-height:1.9;font-size:.95rem;">Velocity isn't an OS — it's a high-speed gaming service. We route the world's biggest titles to your machine in under 10 seconds.</p>
+        <div style="margin-top:2.8rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.28);">Optimizing Connection</span>
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--p1);" id="speed-timer">9.8s remaining</span>
+          </div>
+          <div class="progress-track"><div id="speed-bar"></div></div>
+        </div>
+        <div style="margin-top:2rem;padding:1.5rem;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:8px;">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:.6rem;">Service vs. Traditional</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+            <div style="font-size:.8rem;color:rgba(255,255,255,.5);">⛔ Traditional: 45min install</div>
+            <div style="font-size:.8rem;color:#4ade80;">✓ Velocity: 9.8s deploy</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.5);">⛔ DRM locks files</div>
+            <div style="font-size:.8rem;color:#4ade80;">✓ No DRM friction</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.5);">⛔ 100GB disk usage</div>
+            <div style="font-size:.8rem;color:#4ade80;">✓ Zero disk usage</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.4rem;">
+      <div class="fc-container"><div class="fc" style="padding:2.4rem;"><div class="fc-glow"></div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--p1);margin-bottom:.9rem;">01</div><h4 style="font-size:1.25rem;font-weight:800;margin-bottom:.45rem;">Lifetime Membership</h4><p style="font-size:.875rem;color:rgba(255,255,255,.33);line-height:1.7;">Access our entire game routing service for life. Pay once, play forever.</p></div></div>
+      <div class="fc-container"><div class="fc" style="padding:2.4rem;"><div class="fc-glow"></div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--p1);margin-bottom:.9rem;">02</div><h4 style="font-size:1.25rem;font-weight:800;margin-bottom:.45rem;">Pure Performance</h4><p style="font-size:.875rem;color:rgba(255,255,255,.33);line-height:1.7;">We deliver games directly through our service, bypassing traditional bloat.</p></div></div>
+      <div class="fc-container"><div class="fc" style="padding:2.4rem;"><div class="fc-glow"></div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--p1);margin-bottom:.9rem;">03</div><h4 style="font-size:1.25rem;font-weight:800;margin-bottom:.45rem;">Pakistani Nodes</h4><p style="font-size:.875rem;color:rgba(255,255,255,.33);line-height:1.7;">Local service infrastructure means sub-10ms pings. Built for this region.</p></div></div>
+      <div class="fc-container"><div class="fc" style="padding:2.4rem;"><div class="fc-glow"></div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--p1);margin-bottom:.9rem;">04</div><h4 style="font-size:1.25rem;font-weight:800;margin-bottom:.45rem;">Always Online Vault</h4><p style="font-size:.875rem;color:rgba(255,255,255,.33);line-height:1.7;">Millions of titles maintained and updated. New titles added continuously.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DNA ═══════════════ -->
+<section id="dna">
+  <div style="text-align:center;position:relative;z-index:10;">
+    <span class="eyebrow">Service Philosophy</span>
+    <h2 class="h-xl g-text">DNA</h2>
+    <p style="margin-top:1.5rem;font-size:1rem;color:rgba(255,255,255,.25);max-width:420px;margin-left:auto;margin-right:auto;line-height:1.8;">Everything we built Velocity around — distilled into its core principles.</p>
+  </div>
+  <div id="bubble-wrap"></div>
+</section>
+
+<!-- ═══════════════ CONTACT ═══════════════ -->
+<section id="contact">
+  <div style="text-align:center;width:100%;">
+    <span class="eyebrow">Establish Connection</span>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;margin-bottom:1.4rem;line-height:1;" class="g-text">Join Velocity</h2>
+    <p style="color:rgba(255,255,255,.28);font-size:1rem;margin-bottom:3.5rem;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.8;">Lifetime access. One payment. Every game. Forever.<br><span style="font-size:.85rem;color:rgba(255,255,255,.18);">Not a subscription. Not a rental. Yours, for life.</span></p>
+    <div style="display:flex;justify-content:center;gap:22px;">
+      <button onclick="revealWA()" class="contact-btn mag-btn" title="WhatsApp">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.1 1.519 5.823L.057 24l6.344-1.643A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.007-1.372l-.359-.213-3.722.976.994-3.636-.234-.372A9.78 9.78 0 0 1 2.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818zm5.397-7.266c-.295-.148-1.748-.862-2.019-.96-.27-.099-.467-.148-.664.148-.196.295-.762.96-.934 1.157-.172.197-.344.222-.639.074-.295-.148-1.245-.459-2.372-1.464-.876-.782-1.468-1.748-1.64-2.043-.172-.295-.018-.455.129-.602.133-.133.295-.345.443-.517.148-.172.197-.295.295-.492.099-.197.05-.37-.025-.517-.074-.148-.664-1.6-.91-2.19-.24-.575-.483-.497-.664-.506l-.566-.01c-.197 0-.517.074-.787.37-.27.295-1.034 1.01-1.034 2.462s1.059 2.855 1.206 3.052c.148.197 2.084 3.183 5.048 4.462.706.305 1.257.487 1.686.622.708.226 1.353.194 1.862.118.568-.085 1.748-.714 1.995-1.404.246-.689.246-1.28.172-1.404-.074-.123-.27-.197-.566-.345z"/></svg>
+      </button>
+      <a href="https://www.facebook.com/profile.php?id=61570990682716" target="_blank" class="contact-btn mag-btn" title="Facebook">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+    </div>
+    <div id="wa-num" class="hidden" style="margin-top:3rem;font-family:'Space Mono',monospace;font-size:clamp(1.4rem,3.5vw,2.8rem);color:var(--p1);letter-spacing:.08em;">03308735191</div>
+  </div>
+</section>
+
+<footer style="padding:5rem;text-align:center;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.5em;text-transform:uppercase;color:rgba(255,255,255,.09);">Velocity Game Network // Built for Performance // Pakistan's Fastest Game Service</footer>
+
+<!-- ═══════════════ CHAT BUBBLE ═══════════════ -->
+<div class="chat-tooltip" id="chat-tooltip">💬 Got questions? Ask Velocity AI!</div>
+<div id="chat-bubble" title="Chat with Velocity AI">
+  <div class="chat-notif">1</div>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C6.48 2 2 6.03 2 11c0 2.64 1.19 5.01 3.09 6.72L4 22l4.55-2.28C9.63 20.22 10.79 20.5 12 20.5c5.52 0 10-4.03 10-9S17.52 2 12 2zm0 16.5c-1.05 0-2.07-.18-3.02-.51L5.5 19.5l.9-3.14C4.94 14.9 4 13.04 4 11c0-3.87 3.58-7 8-7s8 3.13 8 7-3.58 7-8 7z"/>
+    <circle cx="8.5" cy="11" r="1.2"/><circle cx="12" cy="11" r="1.2"/><circle cx="15.5" cy="11" r="1.2"/>
+  </svg>
+</div>
+
+<!-- ═══════════════ FULL SCREEN CHAT PANEL ═══════════════ -->
+<div id="chat-panel">
+
+  <!-- LEFT: CHAT AREA (70%) -->
+  <div class="chat-left">
+    <div class="chat-header">
+      <div class="chat-avatar">🚀<div class="chat-avatar-dot"></div></div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Velocity Support</div>
+        <div class="chat-header-status">● Online — Click any question to get an answer</div>
+      </div>
+      <button class="chat-close-btn" onclick="closeChat()">✕</button>
+    </div>
+
+    <!-- Back button (shown when inside a topic) -->
+    <button class="chat-back-btn" id="chat-back-btn" onclick="showTopicScreen()" style="display:none;">
+      <span class="chat-back-btn-icon">←</span> Back to Topics
+    </button>
+
+    <!-- Context badge -->
+    <div id="chat-context-badge"></div>
+
+    <!-- TOPIC SCREEN (shown first) -->
+    <div id="topic-screen"></div>
+
+    <!-- MESSAGES (shown after topic picked) -->
+    <div class="chat-messages" id="chat-messages" style="display:none;"></div>
+
+    <!-- No input note -->
+    <div class="chat-no-input-note" id="chat-no-input-note" style="display:none;">
+      👆 Click a question on the right to get an instant answer
+    </div>
+  </div>
+
+  <!-- RIGHT: PROMPTS PANEL (30%) -->
+  <div class="chat-right">
+    <div class="prompts-header">
+      <div class="prompts-pkg-label" id="prompts-pkg-label">Choose a Topic</div>
+      <div class="prompts-title" id="prompts-title">Pick a question</div>
+      <div class="prompts-hint" id="prompts-hint">Click any question for an instant answer</div>
+    </div>
+    <div class="prompts-body" id="prompts-body"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ LIBRARY OVERLAY ═══════════════ -->
+<div id="library-overlay">
+  <div class="lib-header">
+    <div><div class="lib-title">VELOCITY — GAME VAULT</div><div class="lib-count" id="lib-count">Loading...</div></div>
+    <input type="text" id="lib-search" class="lib-search" placeholder="Search the entire Steam catalog..." oninput="searchGames(this.value)">
+    <button class="lib-close" onclick="closeLibrary()">✕</button>
+  </div>
+  <div class="vault-note">
+    <div class="vault-note-dot"></div>
+    <div class="vault-note-text">This showcase displays popular titles — your lifetime access includes <strong>the entire Steam catalog</strong>. Titles with Denuvo or kernel-level anti-cheat are excluded for better performance.</div>
+  </div>
+  <div class="lib-filters">
+    <div class="f-chip active" onclick="filterGames(this,'all')">All</div>
+    <div class="f-chip" onclick="filterGames(this,'action')">Action</div>
+    <div class="f-chip" onclick="filterGames(this,'rpg')">RPG</div>
+    <div class="f-chip" onclick="filterGames(this,'strategy')">Strategy</div>
+    <div class="f-chip" onclick="filterGames(this,'survival')">Survival</div>
+    <div class="f-chip" onclick="filterGames(this,'free')">Free to Play</div>
+    <div class="f-chip" onclick="filterGames(this,'horror')">Horror</div>
+    <div class="f-chip" onclick="filterGames(this,'indie')">Indie</div>
+  </div>
+  <div class="lib-body" id="lib-body">
+    <div id="game-grid"></div>
+    <div id="no-results"><p>No games found — try a different search</p></div>
+    <button class="load-more-btn" id="load-more-btn" onclick="loadMoreGames()">Load More Games ↓</button>
+  </div>
+  <div class="vault-stat-bar">
+    <div class="vault-stat"><div class="vault-stat-n">Millions+</div><div class="vault-stat-l">Total Vault Size</div></div>
+    <div class="vault-stat"><div class="vault-stat-n">DRM-Free</div><div class="vault-stat-l">No Denuvo</div></div>
+    <div class="vault-stat"><div class="vault-stat-n">9.8s</div><div class="vault-stat-l">Avg Deploy</div></div>
+    <div class="vault-stat"><div class="vault-stat-n">∞</div><div class="vault-stat-l">Lifetime Access</div></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════ -->
-<!-- VISION -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="vision">
-  <div class="vision-grid">
-    <div>
-      <div class="section-eyebrow reveal">// THE VISION</div>
-      <h2 class="section-heading reveal" style="transition-delay:0.1s">
-        Built Without<br><span class="gradient-text">Limits</span>
-      </h2>
-      <p class="vision-body reveal" style="transition-delay:0.2s">
-        Velocity is not just a product — it is a philosophy. We stripped away everything that slows a gamer down: subscriptions, hidden fees, forced updates, and compromises. What remains is pure, concentrated performance in your hands, forever.
-      </p>
-      <p class="vision-body reveal" style="transition-delay:0.25s;margin-top:16px;">
-        Designed from the ground up for the Pakistani gaming scene, Velocity brings world-class infrastructure to every corner of the country at a price that finally makes sense.
-      </p>
-      <div class="vision-pills reveal" style="transition-delay:0.3s">
-        <div class="pill">No Monthly Fees</div>
-        <div class="pill">Lifetime Updates</div>
-        <div class="pill">Local Support</div>
-        <div class="pill">Built for Pakistan</div>
-        <div class="pill">Gaming First</div>
-      </div>
-    </div>
 
-    <div class="vision-panel reveal" style="transition-delay:0.15s">
-      <div class="vision-panel-item">
-        <div class="vision-panel-icon">⚡</div>
-        <div>
-          <div class="vision-panel-title">Instant Activation</div>
-          <div class="vision-panel-desc">Your system goes live in under 60 seconds. No waiting, no verification queues, no delays.</div>
-        </div>
-      </div>
-      <div class="vision-panel-item">
-        <div class="vision-panel-icon">🛡️</div>
-        <div>
-          <div class="vision-panel-title">Lifetime Security</div>
-          <div class="vision-panel-desc">One purchase protects you forever. Security patches and threat updates delivered automatically.</div>
-        </div>
-      </div>
-      <div class="vision-panel-item">
-        <div class="vision-panel-icon">🎮</div>
-        <div>
-          <div class="vision-panel-title">Gaming Priority Mode</div>
-          <div class="vision-panel-desc">Resources dynamically allocated to your active game. Latency drops, FPS climbs.</div>
-        </div>
-      </div>
-      <div class="vision-panel-item">
-        <div class="vision-panel-icon">🌐</div>
-        <div>
-          <div class="vision-panel-title">Network Optimization</div>
-          <div class="vision-panel-desc">Smart routing cuts ping to regional servers. Built specifically for Pakistani ISPs.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="section-divider"></div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- FEATURES -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="features">
-  <div class="features-header">
-    <div class="section-eyebrow reveal">// SYSTEM FEATURES</div>
-    <h2 class="section-heading reveal" style="transition-delay:0.1s">
-      Everything You<br><span class="gradient-text">Need. Forever.</span>
-    </h2>
-  </div>
-
-  <div class="features-grid">
-
-    <div class="feature-card tilt-card reveal">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">01</div>
-      <span class="feature-icon">🇵🇰</span>
-      <div class="feature-title">First in Pakistan</div>
-      <div class="feature-desc">Velocity stands as Pakistan's first dedicated gaming OS experience — engineered locally, built for Pakistani hardware setups, optimized for regional network infrastructure. No foreign system has ever come close.</div>
-      <div class="feature-tag">PIONEERING</div>
-    </div>
-
-    <div class="feature-card tilt-card reveal" style="transition-delay:0.1s">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">02</div>
-      <span class="feature-icon">♾️</span>
-      <div class="feature-title">Lifetime Access</div>
-      <div class="feature-desc">Pay once. Access everything forever. No renewal dates. No subscription reminders. No sudden lock-outs. Your system remains yours for life, with every update included at no additional cost, ever.</div>
-      <div class="feature-tag">PERMANENT</div>
-    </div>
-
-    <div class="feature-card tilt-card reveal" style="transition-delay:0.15s">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">03</div>
-      <span class="feature-icon">🚫</span>
-      <div class="feature-title">Zero Subscriptions</div>
-      <div class="feature-desc">Subscriptions are a tax on existence. Velocity refuses to participate. One transaction, one decision, total ownership. Your budget stays in your wallet where it belongs — not in a recurring billing cycle.</div>
-      <div class="feature-tag">SUBSCRIPTION-FREE</div>
-    </div>
-
-    <div class="feature-card tilt-card reveal" style="transition-delay:0.2s">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">04</div>
-      <span class="feature-icon">💎</span>
-      <div class="feature-title">Premium at Low Cost</div>
-      <div class="feature-desc">World-class performance doesn't have to break the bank. At ₨5,000 one-time, Velocity delivers enterprise-level system management that would cost 10× more anywhere else in the world.</div>
-      <div class="feature-tag">AFFORDABLE</div>
-    </div>
-
-    <div class="feature-card tilt-card reveal" style="transition-delay:0.05s">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">05</div>
-      <span class="feature-icon">⚙️</span>
-      <div class="feature-title">Deep System Control</div>
-      <div class="feature-desc">Full access to every layer of your system. CPU governor, GPU clock management, RAM allocation, process priority — all exposed through a clean, powerful interface designed for serious users.</div>
-      <div class="feature-tag">ADVANCED</div>
-    </div>
-
-    <div class="feature-card tilt-card reveal" style="transition-delay:0.15s">
-      <div class="feature-card-glow"></div>
-      <div class="feature-num">06</div>
-      <span class="feature-icon">🔄</span>
-      <div class="feature-title">Auto-Optimization Engine</div>
-      <div class="feature-desc">Velocity learns your usage patterns over time and dynamically adjusts system parameters before you even launch your game. The longer you use it, the faster it becomes — intelligent performance, every session.</div>
-      <div class="feature-tag">AI-POWERED</div>
-    </div>
-
-  </div>
-</section>
-
-<div class="section-divider"></div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- SPECS / TERMINAL -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="specs">
-  <div class="specs-layout">
-
-    <div class="reveal">
-      <div class="section-eyebrow">// SYSTEM SPECS</div>
-      <h2 class="section-heading" style="margin-bottom:48px">
-        What's Under<br><span class="gradient-text">the Hood</span>
-      </h2>
-      <div class="spec-list">
-        <div class="spec-row">
-          <span class="spec-key">Platform</span>
-          <span class="spec-val">Windows 10 / 11</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">Architecture</span>
-          <span class="spec-val">x64 Native</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">GPU Support</span>
-          <span class="spec-val">NVIDIA / AMD / Intel</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">RAM Required</span>
-          <span class="spec-val">4 GB Minimum</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">Activation</span>
-          <span class="spec-val">Instant Online</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">Updates</span>
-          <span class="spec-val">Lifetime Included</span>
-        </div>
-        <div class="spec-row">
-          <span class="spec-key">License</span>
-          <span class="spec-val">Perpetual Single-User</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="spec-terminal reveal" style="transition-delay:0.15s">
-      <div class="spec-terminal-bar">
-        <div class="terminal-dot t-red"></div>
-        <div class="terminal-dot t-yellow"></div>
-        <div class="terminal-dot t-green"></div>
-        <span class="terminal-title">VELOCITY — SYSTEM TERMINAL v2.4.1</span>
-      </div>
-      <div class="spec-terminal-body">
-        <span class="t-line"><span class="t-prompt">VEL></span> <span class="t-cmd">system.init()</span></span>
-        <span class="t-line"><span class="t-out">  → Loading kernel modules...</span></span>
-        <span class="t-line"><span class="t-out">  → Detecting hardware profile...</span></span>
-        <span class="t-line t-success">  ✓ GPU: RTX 4070 [OPTIMAL]</span>
-        <span class="t-line t-success">  ✓ CPU: i7-13700K [OPTIMAL]</span>
-        <span class="t-line t-success">  ✓ RAM: 32 GB DDR5 [OPTIMAL]</span>
-        <span class="t-line"><span class="t-out">&nbsp;</span></span>
-        <span class="t-line"><span class="t-prompt">VEL></span> <span class="t-cmd">gaming.mode.enable()</span></span>
-        <span class="t-line t-success">  ✓ Background processes suspended</span>
-        <span class="t-line t-success">  ✓ GPU priority: MAXIMUM</span>
-        <span class="t-line t-success">  ✓ Network routing optimized</span>
-        <span class="t-line t-success">  ✓ FPS delta reduced by 34%</span>
-        <span class="t-line"><span class="t-out">&nbsp;</span></span>
-        <span class="t-line"><span class="t-prompt">VEL></span> <span class="t-cmd">license.verify()</span></span>
-        <span class="t-line t-success">  ✓ Status: LIFETIME ACTIVE</span>
-        <span class="t-line t-success">  ✓ Expires: NEVER</span>
-        <span class="t-line"><span class="t-out">&nbsp;</span></span>
-        <span class="t-line"><span class="t-prompt">VEL></span> <span class="t-cursor"></span></span>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<div class="section-divider"></div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- SHOWCASE SCROLL -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="showcase" style="padding-left:0;padding-right:0;">
-  <div class="showcase-header reveal">
-    <div class="section-eyebrow">// VELOCITY IN ACTION</div>
-    <h2 class="section-heading">
-      Built for <span class="gradient-text">Every Game</span>
-    </h2>
-  </div>
-  <div style="overflow:hidden;">
-    <div class="showcase-scroll">
-      <!-- cards × 2 for seamless loop -->
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#7c3aed22,#3b82f622);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">FPS BOOST</div>
-          <div class="sc-title">Battle Royale Mode</div>
-        </div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">LOW LATENCY</div>
-          <div class="sc-title">MMO Optimization</div>
-        </div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#1a0533,#2d1b69);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">GPU PRIORITY</div>
-          <div class="sc-title">Open World Rendering</div>
-        </div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0c1445,#1e3a8a);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">NETWORK ROUTING</div>
-          <div class="sc-title">Competitive Multiplayer</div>
-        </div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0f1f0f,#1a3a1a);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">CPU GOVERNOR</div>
-          <div class="sc-title">Strategy & RTS</div>
-        </div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#2d0a1e,#7c1d4a);"></div>
-        <div class="showcase-card-inner">
-          <div class="sc-label">AUDIO ENGINE</div>
-          <div class="sc-title">Immersive RPG Mode</div>
-        </div>
-      </div>
-      <!-- duplicate for loop -->
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#7c3aed22,#3b82f622);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">FPS BOOST</div><div class="sc-title">Battle Royale Mode</div></div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">LOW LATENCY</div><div class="sc-title">MMO Optimization</div></div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#1a0533,#2d1b69);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">GPU PRIORITY</div><div class="sc-title">Open World Rendering</div></div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0c1445,#1e3a8a);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">NETWORK ROUTING</div><div class="sc-title">Competitive Multiplayer</div></div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#0f1f0f,#1a3a1a);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">CPU GOVERNOR</div><div class="sc-title">Strategy & RTS</div></div>
-      </div>
-      <div class="showcase-card">
-        <div class="showcase-card-bg" style="background:linear-gradient(135deg,#2d0a1e,#7c1d4a);"></div>
-        <div class="showcase-card-inner"><div class="sc-label">AUDIO ENGINE</div><div class="sc-title">Immersive RPG Mode</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="section-divider"></div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- TESTIMONIALS -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="testimonials">
-  <div class="features-header">
-    <div class="section-eyebrow reveal">// USER VOICES</div>
-    <h2 class="section-heading reveal" style="transition-delay:0.1s">
-      Trusted by <span class="gradient-text">Real Gamers</span>
-    </h2>
-  </div>
-  <div class="testimonials-grid">
-
-    <div class="testi-card reveal">
-      <div class="testi-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <div class="testi-text">My FPS in Warzone literally doubled after running Velocity. I was skeptical but the performance difference is not placebo — it's very real. Best ₨5000 I've spent on gaming, ever.</div>
-      <div class="testi-author">
-        <div class="testi-avatar">AK</div>
-        <div>
-          <div class="testi-name">Ahmed K.</div>
-          <div class="testi-loc">Karachi · Pro Player</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testi-card reveal" style="transition-delay:0.1s">
-      <div class="testi-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <div class="testi-text">Finally something built for Pakistan. No VPN hacks, no subscription traps. One payment and the system just works — every game, every session. Velocity is exactly what we needed.</div>
-      <div class="testi-author">
-        <div class="testi-avatar">ZR</div>
-        <div>
-          <div class="testi-name">Zara R.</div>
-          <div class="testi-loc">Lahore · Content Creator</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testi-card reveal" style="transition-delay:0.2s">
-      <div class="testi-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <div class="testi-text">Ping dropped from 90ms to 34ms on CS2 after the network optimizer kicked in. My team thought I switched ISPs. Velocity is genuinely game-changing — I can't imagine going back.</div>
-      <div class="testi-author">
-        <div class="testi-avatar">UM</div>
-        <div>
-          <div class="testi-name">Usman M.</div>
-          <div class="testi-loc">Islamabad · Esports Team</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<div class="section-divider"></div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- PRICING -->
-<!-- ══════════════════════════════════════════════════ -->
-<section id="pricing">
-  <div class="pricing-center">
-    <div class="section-eyebrow reveal">// ACCESS LEVEL</div>
-    <h2 class="section-heading reveal" style="transition-delay:0.1s">
-      One Price.<br><span class="gradient-text">Everything. Forever.</span>
-    </h2>
-
-    <div class="pricing-card reveal" style="transition-delay:0.2s">
-      <div class="pricing-badge">BEST VALUE</div>
-      <div class="price-num">₨ 5,000</div>
-      <div class="price-period">One-time payment · No renewals · Ever</div>
-
-      <div class="price-features">
-        <div class="price-feat"><div class="price-check">✓</div>Lifetime System License</div>
-        <div class="price-feat"><div class="price-check">✓</div>All Future Updates Included</div>
-        <div class="price-feat"><div class="price-check">✓</div>Gaming Priority Mode</div>
-        <div class="price-feat"><div class="price-check">✓</div>Network Optimization Engine</div>
-        <div class="price-feat"><div class="price-check">✓</div>Deep System Control Panel</div>
-        <div class="price-feat"><div class="price-check">✓</div>Auto-Optimization AI</div>
-        <div class="price-feat"><div class="price-check">✓</div>Local Pakistani Support</div>
-        <div class="price-feat"><div class="price-check">✓</div>60-Second Activation</div>
-      </div>
-
-      <button class="pricing-cta"><span>ACTIVATE VELOCITY NOW</span></button>
-      <div class="pricing-note">Secure payment · Instant delivery · No subscriptions</div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- CTA BANNER -->
-<!-- ══════════════════════════════════════════════════ -->
-<div id="cta-banner">
-  <div class="cta-glow"></div>
-  <div class="section-eyebrow reveal" style="justify-content:center;display:flex;">// READY?</div>
-  <h2 class="cta-heading reveal" style="transition-delay:0.1s">
-    Stop Limiting<br><span class="gradient-text">Yourself</span>
-  </h2>
-  <p class="cta-sub reveal" style="transition-delay:0.2s">
-    Join thousands of Pakistani gamers who already made the switch.
-  </p>
-  <div class="cta-actions reveal" style="transition-delay:0.3s">
-    <button class="btn-primary"><span>GET VELOCITY NOW</span></button>
-    <button class="btn-secondary">VIEW FEATURES</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════ -->
-<!-- FOOTER -->
-<!-- ══════════════════════════════════════════════════ -->
-<footer>
-  <div class="footer-grid">
-    <div>
-      <div class="footer-brand">VELOCITY</div>
-      <p class="footer-tagline">Pakistan's first cinematic gaming system. Built for performance, priced for everyone.</p>
-    </div>
-    <div>
-      <div class="footer-col-title">Product</div>
-      <div class="footer-links">
-        <a href="#features" class="footer-link">Features</a>
-        <a href="#specs" class="footer-link">System Specs</a>
-        <a href="#pricing" class="footer-link">Pricing</a>
-        <a href="#showcase" class="footer-link">Showcase</a>
-      </div>
-    </div>
-    <div>
-      <div class="footer-col-title">Company</div>
-      <div class="footer-links">
-        <a href="#vision" class="footer-link">Vision</a>
-        <a href="#" class="footer-link">About</a>
-        <a href="#" class="footer-link">Blog</a>
-        <a href="#" class="footer-link">Careers</a>
-      </div>
-    </div>
-    <div>
-      <div class="footer-col-title">Support</div>
-      <div class="footer-links">
-        <a href="#" class="footer-link">Contact</a>
-        <a href="#" class="footer-link">Discord</a>
-        <a href="#" class="footer-link">FAQ</a>
-        <a href="#" class="footer-link">WhatsApp</a>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div class="footer-copy">© 2024 VELOCITY. All rights reserved.</div>
-    <div class="footer-made">MADE IN PAKISTAN · BUILT FOR GAMERS</div>
-  </div>
-</footer>
-
-<!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- SCRIPTS -->
-<!-- ══════════════════════════════════════════════════════════════════ -->
 <script>
-// ──────────────────────────────────────
-// WEB AUDIO — no external files needed
-// ──────────────────────────────────────
-let audioCtx = null;
-function getAudio(){
-  if(!audioCtx){
-    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
-  }
-  return audioCtx;
+// ══════════════════════════════════════════════════
+//  GAME DATABASE
+// ══════════════════════════════════════════════════
+const GAME_DB = [
+  { name:"Counter-Strike 2",         genre:"action",   rating:"87%", players:"1.5M players", tag:"FPS",           free:true,  appid:730     },
+  { name:"Team Fortress 2",          genre:"action",   rating:"87%", players:"60K players",  tag:"FPS",           free:true,  appid:440     },
+  { name:"Half-Life 2",              genre:"action",   rating:"98%", players:"12K players",  tag:"FPS",           free:false, appid:220     },
+  { name:"Portal 2",                 genre:"action",   rating:"98%", players:"18K players",  tag:"Puzzle-FPS",    free:false, appid:620     },
+  { name:"Left 4 Dead 2",            genre:"action",   rating:"97%", players:"28K players",  tag:"Co-op FPS",     free:false, appid:550     },
+  { name:"Deep Rock Galactic",       genre:"action",   rating:"98%", players:"40K players",  tag:"Co-op",         free:false, appid:548430  },
+  { name:"Alien: Isolation",         genre:"horror",   rating:"94%", players:"4K players",   tag:"Horror FPS",    free:false, appid:214490  },
+  { name:"Prey (2017)",              genre:"action",   rating:"87%", players:"3K players",   tag:"FPS/RPG",       free:false, appid:480490  },
+  { name:"Insurgency: Sandstorm",    genre:"action",   rating:"87%", players:"5K players",   tag:"Tactical FPS",  free:false, appid:581320  },
+  { name:"Ready or Not",             genre:"action",   rating:"88%", players:"18K players",  tag:"Tactical FPS",  free:false, appid:1144200 },
+  { name:"Hollow Knight",            genre:"indie",    rating:"98%", players:"15M players",  tag:"Metroidvania",  free:false, appid:367520  },
+  { name:"Celeste",                  genre:"indie",    rating:"98%", players:"4M players",   tag:"Platformer",    free:false, appid:504230  },
+  { name:"Hades",                    genre:"action",   rating:"98%", players:"8M players",   tag:"Roguelike",     free:false, appid:1145360 },
+  { name:"Hades II",                 genre:"action",   rating:"95%", players:"3M players",   tag:"Roguelike",     free:false, appid:1801859 },
+  { name:"Dead Cells",               genre:"action",   rating:"95%", players:"6M players",   tag:"Roguelike",     free:false, appid:588650  },
+  { name:"Cuphead",                  genre:"indie",    rating:"91%", players:"6M players",   tag:"Run & Gun",     free:false, appid:268910  },
+  { name:"Risk of Rain 2",           genre:"action",   rating:"92%", players:"7M players",   tag:"Roguelike",     free:false, appid:632360  },
+  { name:"Monster Hunter: World",    genre:"action",   rating:"90%", players:"18M players",  tag:"Hunt",          free:false, appid:582010  },
+  { name:"Monster Hunter Rise",      genre:"action",   rating:"87%", players:"10M players",  tag:"Hunt",          free:false, appid:1446780 },
+  { name:"Sekiro: Shadows Die Twice",genre:"action",   rating:"93%", players:"5M players",   tag:"Souls-like",    free:false, appid:814380  },
+  { name:"Elden Ring",               genre:"action",   rating:"96%", players:"20M players",  tag:"Souls-like",    free:false, appid:1245620 },
+  { name:"Dark Souls III",           genre:"action",   rating:"93%", players:"8M players",   tag:"Souls-like",    free:false, appid:374320  },
+  { name:"Devil May Cry 5",          genre:"action",   rating:"93%", players:"4M players",   tag:"Action",        free:false, appid:601150  },
+  { name:"NieR: Automata",           genre:"action",   rating:"94%", players:"7M players",   tag:"Action RPG",    free:false, appid:524220  },
+  { name:"Path of Exile",            genre:"action",   rating:"87%", players:"24M players",  tag:"ARPG",          free:true,  appid:238960  },
+  { name:"Warframe",                 genre:"action",   rating:"82%", players:"50M players",  tag:"Co-op",         free:true,  appid:230410  },
+  { name:"Destiny 2",                genre:"action",   rating:"73%", players:"30M players",  tag:"FPS/MMO",       free:true,  appid:1085660 },
+  { name:"Red Dead Redemption 2",    genre:"action",   rating:"93%", players:"40M players",  tag:"Open World",    free:false, appid:1174180 },
+  { name:"GTA V",                    genre:"action",   rating:"87%", players:"200M players", tag:"Open World",    free:false, appid:271590  },
+  { name:"God of War",               genre:"action",   rating:"97%", players:"23M players",  tag:"Action",        free:false, appid:1593500 },
+  { name:"Baldur's Gate 3",          genre:"rpg",      rating:"97%", players:"10M players",  tag:"RPG",           free:false, appid:1086940 },
+  { name:"Cyberpunk 2077",           genre:"rpg",      rating:"90%", players:"22M players",  tag:"Open World",    free:false, appid:1091500 },
+  { name:"The Witcher 3",            genre:"rpg",      rating:"97%", players:"40M players",  tag:"Open World RPG",free:false, appid:292030  },
+  { name:"Stardew Valley",           genre:"survival", rating:"98%", players:"30M players",  tag:"Farming Sim",   free:false, appid:413150  },
+  { name:"Terraria",                 genre:"survival", rating:"98%", players:"44M players",  tag:"Sandbox",       free:false, appid:105600  },
+  { name:"Valheim",                  genre:"survival", rating:"93%", players:"12M players",  tag:"Viking Survival",free:false,appid:892970  },
+  { name:"Dota 2",                   genre:"strategy", rating:"80%", players:"800K players", tag:"MOBA",          free:true,  appid:570     },
+  { name:"RimWorld",                 genre:"strategy", rating:"98%", players:"5M players",   tag:"Colony Sim",    free:false, appid:294100  },
+  { name:"Factorio",                 genre:"strategy", rating:"98%", players:"3M players",   tag:"Factory",       free:false, appid:427520  },
+  { name:"Phasmophobia",             genre:"horror",   rating:"93%", players:"5M players",   tag:"Horror Co-op",  free:false, appid:739630  },
+  { name:"Lethal Company",           genre:"horror",   rating:"95%", players:"10M players",  tag:"Horror Co-op",  free:false, appid:1966720 },
+  { name:"Apex Legends",             genre:"free",     rating:"78%", players:"100M players", tag:"Battle Royale", free:true,  appid:1172470 },
+  { name:"Rocket League",            genre:"free",     rating:"92%", players:"80M players",  tag:"Sports",        free:true,  appid:252950  },
+];
+const seen = new Set();
+const GAMES = GAME_DB.filter(g => { if(seen.has(g.appid)) return false; seen.add(g.appid); return true; });
+
+let currentGenre = 'all', currentSearch = '', displayedCount = 0;
+const PAGE_SIZE = 36;
+
+function getFilteredGames() {
+  return GAMES.filter(g => {
+    const genreMatch = currentGenre === 'all' || g.genre === currentGenre || (currentGenre === 'free' && g.free);
+    const searchMatch = !currentSearch || g.name.toLowerCase().includes(currentSearch.toLowerCase()) || g.tag.toLowerCase().includes(currentSearch.toLowerCase());
+    return genreMatch && searchMatch;
+  });
 }
-function playHover(){
-  const ctx = getAudio(); if(!ctx) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.frequency.setValueAtTime(880, ctx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.08);
-  g.gain.setValueAtTime(0.04, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-  o.start(); o.stop(ctx.currentTime + 0.09);
+
+function renderGames(reset = true) {
+  const grid = document.getElementById('game-grid');
+  const filtered = getFilteredGames();
+  const noRes = document.getElementById('no-results');
+  const loadBtn = document.getElementById('load-more-btn');
+  document.getElementById('lib-count').textContent = filtered.length + ' showcase titles (full catalog = millions)';
+  if(reset){ grid.innerHTML=''; displayedCount=0; document.getElementById('lib-body').scrollTop=0; }
+  const slice = filtered.slice(displayedCount, displayedCount + PAGE_SIZE);
+  displayedCount += slice.length;
+  noRes.style.display = filtered.length === 0 ? 'block' : 'none';
+  loadBtn.style.display = displayedCount >= filtered.length ? 'none' : 'flex';
+  slice.forEach((game, i) => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    const storeUrl = `https://store.steampowered.com/app/${game.appid}/`;
+    const imgP = `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/library_600x900.jpg`;
+    const imgFall = `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`;
+    card.innerHTML = `<a href="${storeUrl}" target="_blank" style="display:block;text-decoration:none;color:inherit;"><div style="position:relative;"><img src="${imgP}" onerror="this.src='${imgFall}'" class="game-card-img" alt="${game.name}" loading="lazy"/><div class="game-card-overlay"><div class="game-card-play">Open on Steam →</div></div></div><div class="game-card-info"><div class="game-card-name">${game.name}</div><div class="game-card-meta"><div class="game-card-rating">★ ${game.rating}</div><div class="game-card-badge ${game.free?'badge-free':''}">${game.free?'Free':game.tag}</div></div><div class="game-card-players">${game.players}</div></div></a>`;
+    card.addEventListener('mousedown', function(e){ const r=this.getBoundingClientRect(); const rip=document.createElement('div'); rip.className='card-ripple'; rip.style.cssText=`width:40px;height:40px;left:${e.clientX-r.left}px;top:${e.clientY-r.top}px`; this.appendChild(rip); setTimeout(()=>rip.remove(),700); });
+    grid.appendChild(card);
+    gsap.from(card, { opacity:0, y:24, scale:0.94, duration:0.45, delay:i*0.022, ease:'power3.out' });
+  });
 }
-function playClick(){
-  const ctx = getAudio(); if(!ctx) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine';
-  o.frequency.setValueAtTime(440, ctx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.12);
-  g.gain.setValueAtTime(0.08, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-  o.start(); o.stop(ctx.currentTime + 0.14);
+
+function loadMoreGames() { renderGames(false); }
+function filterGames(chip, genre) { document.querySelectorAll('#library-overlay .f-chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); currentGenre=genre; document.getElementById('lib-search').value=''; currentSearch=''; renderGames(true); }
+function searchGames(val) { currentSearch=val; renderGames(true); }
+
+const overlay = document.getElementById('library-overlay');
+const libBody = document.getElementById('lib-body');
+overlay.addEventListener('wheel', function(e){ e.stopPropagation(); const atTop=libBody.scrollTop===0&&e.deltaY<0; const atBottom=libBody.scrollTop+libBody.clientHeight>=libBody.scrollHeight-1&&e.deltaY>0; if(atTop||atBottom) e.preventDefault(); },{ passive:false });
+overlay.addEventListener('touchmove', function(e){ e.stopPropagation(); },{ passive:true });
+function openLibrary() { overlay.classList.add('open'); document.body.style.overflow='hidden'; if(typeof lenis!=='undefined') lenis.stop(); renderGames(true); }
+function closeLibrary() { overlay.classList.remove('open'); document.body.style.overflow=''; if(typeof lenis!=='undefined') lenis.start(); }
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeLibrary(); closeChat(); } });
+
+function buildTeaserGrid() {
+  const teaserApps = [1245620,1086940,1091500,292030,814380,367520,413150,105600,1145360,532210,1174180,271590,548430,427520,504230,1593500,582010,632360,294100,892970,264710,238960,1326470,230410];
+  const grid = document.getElementById('teaser-grid');
+  teaserApps.forEach(id => {
+    const div = document.createElement('div'); div.className='teaser-card';
+    const img = document.createElement('img');
+    img.src=`https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/library_600x900.jpg`;
+    img.onerror=()=>{ img.src=`https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`; };
+    img.alt=''; div.appendChild(img); grid.appendChild(div);
+  });
 }
+buildTeaserGrid();
 
-let hoverLast = 0;
-
-// ──────────────────────────────────────
-// LOADER
-// ──────────────────────────────────────
-const loaderBar = document.getElementById('loader-bar');
-let progress = 0;
-const loaderInterval = setInterval(() => {
-  progress += Math.random() * 18;
-  if(progress >= 100){ progress = 100; clearInterval(loaderInterval); }
-  loaderBar.style.width = progress + '%';
-}, 80);
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    gsap.to('#loader', { opacity:0, duration:0.8, delay:0.5, onComplete:() => {
-      document.getElementById('loader').style.display = 'none';
-    }});
-  }, 600);
-});
-
-// ──────────────────────────────────────
-// SMOOTH SCROLL (Lenis)
-// ──────────────────────────────────────
-// NORMAL INSTANT SCROLL - No Delay
-const lenis = new Lenis({
-  lerp: 0.1,           // Faster response = normal feel
-  smooth: true,
-  smoothTouch: false,   // Instant on desktop
-  wheelMultiplier: 1.0  // Native wheel speed
-});
-
-function raf(time) {
-  lenis.raf(time);
-  requestAnimationFrame(raf);
-}
+const lenis = new Lenis();
+function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
 requestAnimationFrame(raf);
-// ──────────────────────────────────────
-// CURSOR
-// ──────────────────────────────────────
-const cursorDot  = document.getElementById('cursor-dot');
-const cursorRing = document.getElementById('cursor-ring');
-const glow       = document.getElementById('glow');
 
-let mouseX = 0, mouseY = 0;
-let ringX  = 0, ringY  = 0;
-let glowX  = 0, glowY  = 0;
-
-window.addEventListener('mousemove', (e) => {
-  mouseX = e.clientX; mouseY = e.clientY;
-  gsap.to(cursorDot, { x: mouseX - 3, y: mouseY - 3, duration: 0.08 });
-  gsap.to(glow,      { x: mouseX - 500, y: mouseY - 500, duration: 0.5, ease:'power2.out' });
-  let hue = (mouseX / window.innerWidth) * 100;
-  glow.style.background = `radial-gradient(circle, rgba(124,58,237,0.6) 0%, rgba(59,130,246,0.5) ${hue}%, transparent 70%)`;
-});
-
-// smooth ring follow
-function animateRing(){
-  ringX += (mouseX - 22 - ringX) * 0.12;
-  ringY += (mouseY - 22 - ringY) * 0.12;
-  cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
-  requestAnimationFrame(animateRing);
-}
-animateRing();
-
-// hover state
-const interactables = document.querySelectorAll('a, button, .feature-card, .testi-card, .nav-link, .pill');
-interactables.forEach(el => {
-  el.addEventListener('mouseenter', () => {
-    cursorRing.classList.add('hovered');
-    if(Date.now() - hoverLast > 120){ playHover(); hoverLast = Date.now(); }
-  });
-  el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovered'));
-});
-
-document.querySelectorAll('a, button').forEach(el => {
-  el.addEventListener('click', () => {
-    playClick();
-    gsap.fromTo(el, { scale:0.95 }, { scale:1, duration:0.3, ease:'back.out(2)' });
-  });
-});
-
-// ──────────────────────────────────────
-// NAV SCROLL EFFECT
-// ──────────────────────────────────────
-const navbar = document.getElementById('navbar');
-const navLinks = document.querySelectorAll('.nav-link');
-const sections = document.querySelectorAll('section[id]');
-
-window.addEventListener('scroll', () => {
-  if(window.scrollY > 40) navbar.classList.add('scrolled');
-  else navbar.classList.remove('scrolled');
-
-  let current = '';
-  sections.forEach(sec => {
-    if(window.scrollY >= sec.offsetTop - 250) current = sec.id;
-  });
-  navLinks.forEach(l => {
-    l.classList.remove('active');
-    if(l.getAttribute('href') === '#' + current) l.classList.add('active');
-  });
-});
-
-// ──────────────────────────────────────
-// PARTICLES
-// ──────────────────────────────────────
-const canvas = document.getElementById('particles');
-const ctx    = canvas.getContext('2d');
-
-function resizeCanvas(){
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-const PARTICLE_COUNT = 160;
-const particles = Array.from({ length: PARTICLE_COUNT }, () => ({
-  x:     Math.random() * canvas.width,
-  y:     Math.random() * canvas.height,
-  size:  Math.random() * 1.8 + 0.2,
-  speed: Math.random() * 0.5 + 0.1,
-  opacity: Math.random() * 0.4 + 0.05,
-  drift: (Math.random() - 0.5) * 0.3
-}));
-
-function drawParticles(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
-    ctx.fill();
-    p.y -= p.speed;
-    p.x += p.drift;
-    if(p.y < 0){ p.y = canvas.height; p.x = Math.random() * canvas.width; }
-    if(p.x < 0 || p.x > canvas.width) p.x = Math.random() * canvas.width;
-  });
-  requestAnimationFrame(drawParticles);
-}
-drawParticles();
-
-// ──────────────────────────────────────
-// CARD TILT + GLOW
-// ──────────────────────────────────────
-document.querySelectorAll('.tilt-card').forEach(card => {
-  const glowEl = card.querySelector('.feature-card-glow');
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const cx = rect.width  / 2;
-    const cy = rect.height / 2;
-    const rotX = (y - cy) / cy * -10;
-    const rotY = (x - cx) / cx *  10;
-    card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.01)`;
-    if(glowEl){ glowEl.style.left = x + 'px'; glowEl.style.top = y + 'px'; }
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
-  });
-});
-
-// ──────────────────────────────────────
-// GSAP SCROLL ANIMATIONS
-// ──────────────────────────────────────
 gsap.registerPlugin(ScrollTrigger);
-
-// section parallax blur
-gsap.utils.toArray('section').forEach(sec => {
-  gsap.fromTo(sec,
-    { opacity: 0.5, filter: 'blur(4px)', y: 20 },
-    {
-      opacity: 1, filter: 'blur(0px)', y: 0,
-      scrollTrigger: {
-        trigger: sec,
-        start: 'top 85%',
-        end: 'bottom 15%',
-        scrub: 1.5
-      }
-    }
-  );
+document.querySelectorAll('section').forEach(sec => {
+  ScrollTrigger.create({ trigger:sec, start:"top center", end:"bottom center", invalidateOnRefresh:true,
+    onToggle:self=>{ if(self.isActive) sec.classList.remove('out-of-focus'); else sec.classList.add('out-of-focus'); }
+  });
+  if(sec.id!=='hero') sec.classList.add('out-of-focus');
 });
 
-// hero text entrance
-gsap.from('.hero-heading', { y: 60, opacity: 0, duration: 1.4, ease:'power4.out', delay: 1.4 });
-gsap.from('.hero-tag',     { y: 30, opacity: 0, duration: 1,   ease:'power3.out', delay: 1.6 });
-gsap.from('.hero-sub',     { y: 30, opacity: 0, duration: 1,   ease:'power3.out', delay: 1.8 });
-gsap.from('.hero-actions', { y: 30, opacity: 0, duration: 1,   ease:'power3.out', delay: 2.0 });
-gsap.from('.scroll-hint',  { opacity: 0, duration: 1, delay: 2.4 });
+// ── CURSOR ─────────────────────────────────────────
+const dot=document.getElementById('cursor-dot'), ring=document.getElementById('cursor-ring'), aura=document.getElementById('cursor-aura');
+gsap.set(dot,{xPercent:-50,yPercent:-50}); gsap.set(ring,{xPercent:-50,yPercent:-50}); gsap.set(aura,{xPercent:-50,yPercent:-50});
+let lastX=0,lastY=0,sparkThrottle=0;
+document.addEventListener('mousedown',()=>{ dot.classList.add('clicking'); gsap.to(ring,{scale:.75,duration:.12,ease:'power2.out'}); });
+document.addEventListener('mouseup',()=>{ dot.classList.remove('clicking'); gsap.to(ring,{scale:1,duration:.35,ease:'elastic.out(1,0.5)'}); });
+document.addEventListener('click',e=>{ const r=document.createElement('div'); r.className='click-ripple'; r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(),800); });
+function spawnSpark(x,y){ const s=document.createElement('div'); s.className='cursor-spark'; document.body.appendChild(s); gsap.set(s,{x,y}); gsap.to(s,{x:x+(Math.random()-.5)*50,y:y+(Math.random()-.5)*50-15,opacity:0,scale:0,duration:.5+Math.random()*.25,ease:'power2.out',onComplete:()=>s.remove()}); }
+window.addEventListener('mousemove',e=>{
+  const{clientX:x,clientY:y}=e;
+  gsap.set(dot,{x,y}); gsap.to(ring,{x,y,duration:.1,ease:'power2.out'}); gsap.to(aura,{x,y,duration:.5,ease:'power3.out'});
+  const vx=x-lastX,vy=y-lastY,speed=Math.sqrt(vx*vx+vy*vy); lastX=x; lastY=y;
+  if(speed>4){ const angle=Math.atan2(vy,vx)*180/Math.PI,stretch=Math.min(1+speed*.06,3),compress=1/Math.sqrt(stretch); gsap.to(ring,{scaleX:stretch,scaleY:compress,rotation:angle,duration:.08,overwrite:'auto'}); }
+  else gsap.to(ring,{scaleX:1,scaleY:1,rotation:0,duration:.4,overwrite:'auto'});
+  const now=Date.now(); if(speed>14&&now-sparkThrottle>60){ spawnSpark(x,y); sparkThrottle=now; }
+  const nx=(x/window.innerWidth-.5)*70,ny=(y/window.innerHeight-.5)*70;
+  gsap.to('.orb-3',{x:nx,y:ny,duration:1.8,ease:'power1.out',overwrite:'auto'});
+  gsap.to('.orb-1',{x:nx*.3,y:ny*.3,duration:3,ease:'power1.out',overwrite:'auto'});
+  let onCard=false;
+  document.querySelectorAll('.fc').forEach(b=>{ const r=b.getBoundingClientRect(),g=b.querySelector('.fc-glow'); if(x>r.left&&x<r.right&&y>r.top&&y<r.bottom){ onCard=true; if(g){g.style.left=(x-r.left)+'px';g.style.top=(y-r.top)+'px';} const rx=((y-(r.top+r.height/2))/18)*-1,ry=(x-(r.left+r.width/2))/18; gsap.to(b,{rotateX:rx,rotateY:ry,scale:1.012,duration:.35,ease:'power2.out'}); }else gsap.to(b,{rotateX:0,rotateY:0,scale:1,duration:.6,ease:'power2.out'}); });
+  document.querySelectorAll('.feat-card,.step-card').forEach(b=>{ const r=b.getBoundingClientRect(); if(x>r.left&&x<r.right&&y>r.top&&y<r.bottom){ onCard=true; const rx=((y-(r.top+r.height/2))/24)*-1,ry=(x-(r.left+r.width/2))/24; gsap.to(b,{rotateX:rx,rotateY:ry,duration:.35,ease:'power2.out'}); }else gsap.to(b,{rotateX:0,rotateY:0,duration:.6,ease:'power2.out'}); });
+  ['pricing-tilt','pt-starter','pt-pro','pt-custom','pt-vip'].forEach(pid=>{ const pc=document.getElementById(pid); if(pc){ const r=pc.getBoundingClientRect(); if(x>r.left&&x<r.right&&y>r.top&&y<r.bottom){ onCard=true; const rx=((y-(r.top+r.height/2))/22)*-1,ry=(x-(r.left+r.width/2))/22; gsap.to(pc,{rotateX:rx,rotateY:ry,duration:.35,ease:'power2.out'}); }else gsap.to(pc,{rotateX:0,rotateY:0,duration:.6,ease:'power2.out'}); } });
+  ring.classList.toggle('hovering',onCard);
+});
+function applyMagnetics(){ document.querySelectorAll('.mag-btn').forEach(btn=>{ btn.addEventListener('mousemove',function(e){ const r=this.getBoundingClientRect(),bx=(e.clientX-r.left-r.width/2)*.3,by=(e.clientY-r.top-r.height/2)*.3; gsap.to(this,{x:bx,y:by,duration:.2,ease:'power2.out'}); ring.classList.add('hovering'); }); btn.addEventListener('mouseleave',function(){ gsap.to(this,{x:0,y:0,duration:.8,ease:'elastic.out(1,0.4)'}); }); }); }
+applyMagnetics();
+document.querySelectorAll('a,button,input,.f-chip,.contact-btn,.dna-bubble,.stat-item').forEach(el=>{ el.addEventListener('mouseenter',()=>ring.classList.add('hovering')); el.addEventListener('mouseleave',()=>ring.classList.remove('hovering')); });
+const navBtn=document.getElementById('nav-library-btn');
+if(navBtn){ navBtn.addEventListener('mouseenter',()=>{navBtn.style.background='rgba(124,58,237,.3)';navBtn.style.color='#fff';}); navBtn.addEventListener('mouseleave',()=>{navBtn.style.background='rgba(124,58,237,.15)';navBtn.style.color='rgba(255,255,255,.7)';}); }
+document.addEventListener('mouseleave',()=>gsap.to([dot,ring,aura],{opacity:0,duration:.2}));
+document.addEventListener('mouseenter',()=>gsap.to([dot,ring,aura],{opacity:1,duration:.2}));
 
-// reveal elements on scroll
-const revealEls = document.querySelectorAll('.reveal');
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if(e.isIntersecting){ e.target.classList.add('visible'); }
-  });
-}, { threshold: 0.12 });
-revealEls.forEach(el => revealObserver.observe(el));
+// ── DNA BUBBLES ────────────────────────────────────
+const dnaTerms=["10s Deployment","Steam Sync","No Downloads","Lifetime Access","Pakistani Nodes","Millions of Games","Zero Waiting","One Click Play","DRM-Free","Low Latency","Always Online","No Denuvo","Pure Service","Zero Install","Vault Access","Full Catalog"];
+const bw=document.getElementById('bubble-wrap');
+dnaTerms.forEach(text=>{ const b=document.createElement('div'); b.className='dna-bubble'; b.innerText=text; b.style.left=(7+Math.random()*80)+'%'; b.style.top=(8+Math.random()*76)+'%'; bw.appendChild(b); gsap.to(b,{y:-160,scrollTrigger:{trigger:"#dna",scrub:1.5}}); });
 
-// ──────────────────────────────────────
-// STAT COUNTER ANIMATION
-// ──────────────────────────────────────
-function animateCount(el){
-  const target = parseInt(el.getAttribute('data-count'));
-  if(isNaN(target)) return;
-  const prefix = el.getAttribute('data-prefix') || '';
-  let current = 0;
-  const duration = 1600;
-  const step = target / (duration / 16);
-  const timer = setInterval(() => {
-    current += step;
-    if(current >= target){ current = target; clearInterval(timer); }
-    el.textContent = prefix + Math.floor(current).toLocaleString();
-  }, 16);
+gsap.to("#speed-bar",{ width:"100%", scrollTrigger:{trigger:"#speed",start:"top center",scrub:1}, onUpdate(){ const el=document.getElementById('speed-timer'); if(el) el.textContent=((1-this.progress())*9.8).toFixed(1)+'s remaining'; } });
+
+// ══════════════════════════════════════════════════
+//  BUILD YOUR OWN CALCULATOR
+// ══════════════════════════════════════════════════
+const BYO_RATE = 45;
+function getByoBonus(g) { return Math.floor(g/15)*5; }
+function getBonusTierLabel(g, bonus) {
+  if(bonus===0) return '🎁 Buy 15 games → get 5 FREE';
+  const next=(Math.floor(g/15)+1)*15, gap=next-g;
+  return `🎁 +${bonus} free games! ${gap} more to get +${bonus+5} free`;
 }
-const statObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if(e.isIntersecting){
-      const el = e.target.querySelector('[data-count]');
-      if(el) animateCount(el);
-      statObserver.unobserve(e.target);
+function byoFromBudget(v) {
+  document.getElementById('byo-games').value='';
+  const budget=parseInt(v)||0;
+  if(!budget){byoClear();return;}
+  const base=Math.floor(budget/BYO_RATE), bonus=getByoBonus(base), total=base+bonus;
+  showByoOutput(total,budget,bonus,'budget',base,0);
+}
+function byoFromGames(v) {
+  document.getElementById('byo-budget').value='';
+  const games=parseInt(v)||0;
+  if(!games){byoClear();return;}
+  const price=games*BYO_RATE, bonus=getByoBonus(games), total=games+bonus, saved=bonus*BYO_RATE;
+  showByoOutput(total,price,bonus,'games',games,saved);
+}
+function showByoOutput(totalGames,price,bonus,mode,baseGames,saved) {
+  document.getElementById('byo-output').style.display='flex';
+  document.getElementById('byo-out-games').textContent=totalGames.toLocaleString();
+  document.getElementById('byo-out-price').textContent='Rs. '+price.toLocaleString();
+  const bonusRow=document.getElementById('byo-bonus-row');
+  const bonusNum=document.getElementById('byo-out-bonus');
+  const bonusLbl=document.getElementById('byo-bonus-label');
+if(mode==='budget'){
+    bonusLbl.textContent='🎁 Free Bonus';
+    if(bonus>0){
+      bonusNum.textContent='+'+bonus+' FREE';
+      bonusRow.classList.remove('byo-gr-empty');
+    } else {
+      bonusNum.textContent='Buy 15 → get 5 free';
+      bonusRow.classList.add('byo-gr-empty');
     }
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('.stat-item').forEach(s => statObserver.observe(s));
+  } else {
+    bonusLbl.textContent='💸 You Save';
+    if(saved>0){
+      bonusNum.textContent='Rs. '+saved.toLocaleString();
+      bonusRow.classList.remove('byo-gr-empty');
+    } else {
+      bonusNum.textContent='Buy 15 → save Rs. 225';
+      bonusRow.classList.add('byo-gr-empty');
+    }
+  }
+  bonusRow.style.display='flex';
+  const hint=document.getElementById('byo-tier-hint');
+  hint.style.display='block';
+  hint.textContent=getBonusTierLabel(baseGames,bonus);
+  gsap.killTweensOf('#byo-output .byo-stat-row');
+gsap.fromTo('#byo-output .byo-stat-row',{opacity:0,y:8},{opacity:1,y:0,stagger:.06,duration:.3,ease:'power2.out'});
+}
+function byoClear() {
+  document.getElementById('byo-output').style.display='none';
+  document.getElementById('byo-tier-hint').style.display='none';
+}
 
+// ══════════════════════════════════════════════════
+//  Q&A DATABASE — all topics
+// ══════════════════════════════════════════════════
+const TOPIC_DB = {
+
+  starter: {
+    label:'⚙️ Starter Plan',
+    sub:'Rs. 2,999 — Self-Serve',
+    qs: [
+      { q:"⚙️ What exactly do I get with Starter?", a:"You get full lifetime vault access — millions of Steam titles, DRM-free delivery, and Pakistani node routing.\n\nWhat's NOT included:\n• Any setup or installation help\n• Troubleshooting support\n• Configuration assistance\n\nYou're doing everything yourself. If that sounds fine, Starter is great value." },
+      { q:"💸 Is Rs. 2,999 actually worth it?", a:"Even if you play just 5 games through Velocity, you've already saved thousands compared to buying them on Steam.\n\nYour access never expires — so the value keeps growing every single time you launch a game." },
+      { q:"🛠️ Do I need technical skills for Starter?", a:"Honestly, yes.\n\nStarter is for people comfortable with software setup, driver configurations, and troubleshooting on their own.\n\nIf you're not confident doing that — Pro or Elite handle everything for you." },
+      { q:"🔄 Can I upgrade to a higher plan later?", a:"Yes, absolutely.\n\nJust pay the difference and we'll upgrade you instantly. Message us on WhatsApp and we'll sort it out right away." },
+      { q:"❓ What happens if something breaks?", a:"With Starter — you're on your own. There's no support included.\n\nThis is exactly why we recommend Elite for most people. For just Rs. 1,500 more, you get lifetime support that never expires." },
+      { q:"🎮 Does Steam need to be installed?", a:"No. Velocity is completely separate from Steam.\n\nYou don't need a Steam account, you don't need Steam installed. We route games directly to your machine." },
+      { q:"🖥️ Which PCs does Starter work on?", a:"Most Windows PCs from the last 7-8 years work fine.\n\nYou'll need a decent internet connection — 10Mbps+ is recommended for smooth gameplay. Message us with your specs if you're unsure." },
+      { q:"⏱️ How long does self-setup take?", a:"Depends on your technical skill level.\n\nSome people get it done in 30 minutes. Others struggle for hours.\n\nIf you want it done quickly and cleanly — Pro setup gets it sorted in under an hour, for just Rs. 1,000 more." },
+      { q:"🌐 Are all Steam games available?", a:"The vast majority — millions of titles.\n\nThe only exclusions are games with Denuvo DRM or aggressive kernel-level anti-cheat, which perform poorly on any delivery service." },
+      { q:"💡 Why choose Starter over Pro?", a:"Only choose Starter if you're genuinely comfortable configuring software yourself AND you'll never need support.\n\nMost people regret it. For Rs. 1,000 more, Pro handles the entire setup for you." },
+      { q:"📦 Is this a one-time payment?", a:"100% one-time.\n\nPay Rs. 2,999 once and your access is yours forever. No monthly fees, no renewals, no surprises. Ever." },
+      { q:"🔒 Is my data safe?", a:"Yes.\n\nWe only link your machine to our network. We don't store any personal data beyond what's needed for your access." },
+    ]
+  },
+
+  pro: {
+    label:'🔧 Pro Plan',
+    sub:'Rs. 3,999 — We Set You Up',
+    qs: [
+      { q:"🔧 What exactly does Pro setup include?", a:"We remotely connect to your PC, install Velocity, configure everything perfectly, then walk you through launching your first game.\n\nYou sit back — we do the work. You're gaming in under an hour." },
+      { q:"💸 Is Pro worth it vs Starter?", a:"If you value your time — absolutely.\n\nStarter means hours of self-configuration. Pro means we handle everything for the price of one AAA game.\n\nFor Rs. 1,000 more, zero effort on your end." },
+      { q:"⏱️ How long does Pro setup take?", a:"Usually 30 to 60 minutes.\n\nWe schedule a time that works for you, connect remotely, and you'll be gaming within the hour." },
+      { q:"❓ What happens after the initial setup?", a:"You're all set to game — but if something breaks down the line, you'll need to handle it yourself with Pro.\n\nThis is why many people choose Elite instead. It's just Rs. 500 more for lifetime support." },
+      { q:"🔗 How does remote setup work?", a:"We use a secure remote desktop tool.\n\nYou share screen access for the duration of setup (30-60 mins). We configure everything, then the connection is closed. Simple and completely safe." },
+      { q:"🔄 Can I upgrade from Pro to Elite later?", a:"Yes — just pay the Rs. 500 difference.\n\nMessage us on WhatsApp and we'll add lifetime support to your account immediately." },
+      { q:"🔁 What if I change my PC after Pro?", a:"You'd need to set it up again yourself — or pay for a re-setup.\n\nElite includes free re-setup whenever you change PCs. Another reason many people go Elite." },
+      { q:"📊 Pro vs Elite — what's the real difference?", a:"Literally just Rs. 500 and lifetime support.\n\nPro setup ends after installation. Elite means we're with you forever — any time something breaks, we fix it for free." },
+      { q:"🎮 How many games can I play with Pro?", a:"All of them — millions of titles across the entire Steam catalog.\n\nNo limits. Same vault access as all other plans." },
+      { q:"🎯 What games should I play first?", a:"Tell us what genres you love and we'll give you a personal shortlist!\n\nThat's part of the first-launch walkthrough included in Pro." },
+      { q:"📅 When can I get started?", a:"Usually within 24 hours of payment.\n\nMessage us on WhatsApp and we'll schedule your setup time right away." },
+      { q:"🤝 Do I need to be present during setup?", a:"Ideally yes — you'll need to share screen access.\n\nBut we do all the technical work. You can watch TV, eat, do whatever — we handle everything." },
+    ]
+  },
+
+  custom: {
+    label:'🎮 Custom Plan',
+    sub:'Rs. 45/game — Build Your Own',
+    qs: [
+      { q:"🎮 How does Custom pricing actually work?", a:"Simple — Rs. 45 per game.\n\nFor every 15 games you buy, you get 5 bonus games FREE.\n\n• Buy 15 → get 20 total\n• Buy 30 → get 40 total\n• Buy 45 → get 60 total\n\nUse the calculator on the pricing page!" },
+      { q:"🎁 How does the free bonus work exactly?", a:"Every 15 games you buy = 5 extra games free.\n\nIt stacks linearly:\n• 15 purchased → +5 free → 20 total\n• 30 purchased → +10 free → 40 total\n• 60 purchased → +20 free → 80 total" },
+      { q:"💸 Custom vs Starter — which is better value?", a:"Starter gives unlimited vault access for Rs. 2,999.\n\nCustom is better if you only want a specific number of games at a lower upfront cost.\n\nFor example, 20 games = Rs. 900 with Custom. But for unlimited access, Starter wins." },
+      { q:"📦 What's the minimum Custom order?", a:"No strict minimum.\n\nThe bonus kicks in at 15 games. Even 5-10 games is fine at Rs. 45 each — still great value." },
+      { q:"➕ Can I add more games later?", a:"Yes — just top up at the same Rs. 45/game rate.\n\nAnd as your total grows, you keep earning more bonus games." },
+      { q:"🛠️ Is there setup or support in Custom?", a:"No — Custom is self-install, no support included.\n\nIf that worries you, consider Pro (Rs. 3,999) for setup or Elite (Rs. 4,499) for full lifetime support." },
+      { q:"🎯 Can I pick which games I want?", a:"You can play anything in the vault — millions of titles from the entire Steam catalog.\n\nAction, RPG, indie, strategy, survival — it's all available within your game count." },
+      { q:"💡 How does a Rs. 2,700 budget work out?", a:"Rs. 2,700 ÷ Rs. 45 = 60 base games.\n\nYou get +20 bonus games free = 80 games total.\n\nThat's Rs. 900 worth of free games on top." },
+      { q:"🎁 Are bonus games pre-selected?", a:"No — all your games (including bonus ones) come from the full vault.\n\nYou can play anything in the catalog up to your total game count." },
+      { q:"🔁 Can I gift Custom to someone?", a:"We can set it up on any machine you specify.\n\nVIP has an official transferable license, but we're flexible for Custom too — just ask us." },
+      { q:"💳 How do I pay for Custom?", a:"EasyPaisa, JazzCash, or bank transfer.\n\nMessage us on WhatsApp with your budget or game count, we confirm the deal, and you're set up within 24 hours." },
+      { q:"📅 How long does Custom setup take?", a:"Once payment is confirmed, your access is set up within 24 hours — usually much faster.\n\nNo waiting list, no delays." },
+    ]
+  },
+
+  elite: {
+    label:'🚀 Elite Plan',
+    sub:'Rs. 4,499 — Lifetime Support',
+    qs: [
+      { q:"🚀 What makes Elite worth Rs. 500 more than Pro?", a:"Pro ends after the initial setup.\n\nElite means we're your permanent tech support — forever.\n\nAnytime something breaks — next month, next year, any time — you message us, we fix it. No extra charges. No time limits." },
+      { q:"♾️ What does 'lifetime support' actually mean?", a:"Exactly what it says.\n\nNext month, next year, whenever — if something goes wrong with Velocity, you message us and we fix it.\n\nNo extra charges. No expiry. Ever." },
+      { q:"🔧 What does Elite setup include?", a:"We remotely connect to your PC, install and configure Velocity perfectly, then guide you through your first game launch.\n\nYou're gaming within an hour, fully supported." },
+      { q:"🔁 What if I change my PC?", a:"Elite includes free re-setup when you get a new machine.\n\nJust message us and we'll migrate your access with zero hassle." },
+      { q:"⚡ How fast is the Elite support response?", a:"We aim for quick responses — usually within a few hours.\n\nFor a guaranteed 1-hour response, VIP has that covered. It's just Rs. 500 more." },
+      { q:"📊 Elite vs VIP — real difference?", a:"Elite = full lifetime support and managed setup.\n\nVIP adds:\n• Live video call setup\n• Controller config\n• Hardware-tuned graphics\n• Family transfer license\n• 1-hour response guarantee\n\nAll for just Rs. 500 more." },
+      { q:"🔄 Is there a limit to support requests?", a:"None.\n\nLifetime means lifetime — unlimited requests, unlimited fixes. We don't cap it." },
+      { q:"🖥️ Can Elite handle any PC?", a:"Yes, on virtually all Windows PCs from the last 7-8 years.\n\nTell us your specs before you pay and we'll confirm it works for you." },
+      { q:"👨‍👩‍👦 Can I transfer Elite to a family member?", a:"Not by default — but VIP includes an official transferable license.\n\nIf sharing matters to you, VIP is just Rs. 500 more." },
+      { q:"🎮 Does Elite's vault include all games?", a:"Yes — the same vault as all other plans.\n\nMillions of titles. The difference between plans is service level, not game count." },
+      { q:"🤝 What counts as 'support'?", a:"Anything Velocity-related:\n\n• Games not launching\n• Connection issues\n• After a Windows update breaks something\n• Migrating to a new PC\n\nWe handle it all." },
+      { q:"💡 Why is Elite the smart choice?", a:"The gap between Pro and Elite is Rs. 500.\n\nPro leaves you stranded if anything goes wrong later. Elite means we're always there.\n\nIt's the clearest value upgrade on the whole pricing page." },
+    ]
+  },
+
+  vip: {
+    label:'👑 VIP Plan',
+    sub:'Rs. 4,999 — The Full Experience',
+    qs: [
+      { q:"👑 What makes VIP the best plan?", a:"VIP is the complete, nothing-left-out experience:\n\n• Live video call setup\n• Controller & peripheral config\n• Graphics tuned to your exact hardware\n• Transferable license\n• 1-hour response guarantee\n• VIP WhatsApp group\n\nAll for just Rs. 500 more than Elite." },
+      { q:"📹 What's the video call setup like?", a:"We schedule a call — WhatsApp, Google Meet, or Zoom, your choice.\n\nYou share your screen and we configure everything live while you watch. Ask questions in real time. It's as personal as it gets." },
+      { q:"⚡ Is the 1-hour response actually guaranteed?", a:"Yes.\n\nVIP messages are prioritised above everything else. If we ever miss the 1-hour window during reasonable hours, we'll make it right." },
+      { q:"🖥️ What does 'graphics tuned to your hardware' mean?", a:"We check your GPU, CPU, and RAM, then configure in-game settings specifically for your machine.\n\nNo more guessing at settings. Maximum performance for your exact setup." },
+      { q:"🔁 How does the transferable license work?", a:"VIP can be officially transferred to one family member — free, any time.\n\nPerfect for passing it to a sibling, parent, or partner." },
+      { q:"💬 What's the VIP WhatsApp group?", a:"A private group for VIP members only.\n\nEarly announcements, priority support channel, and direct access to the Velocity team. VIP members always hear about things first." },
+      { q:"🎮 Does controller setup include all types?", a:"We support Xbox, PlayStation, and most generic USB controllers.\n\nTell us what you have and we'll make sure it's configured perfectly for your games." },
+      { q:"👴 VIP for someone non-technical?", a:"VIP is made for exactly that.\n\nThe live call means we explain every step as we go. You'll feel completely confident using Velocity after the setup session." },
+      { q:"🏆 What's the most popular plan?", a:"VIP — by a big margin.\n\nOnce people see it's just Rs. 500 more than Elite, the choice is obvious.\n\nMost serious gamers pick VIP." },
+      { q:"🌐 What languages is support in?", a:"Urdu and English — whichever you're more comfortable with.\n\nWe want you to feel at home." },
+      { q:"♾️ Does VIP ever expire?", a:"Never.\n\nOne payment, lifetime VIP access. The 1-hour response, support, and all VIP perks never expire." },
+      { q:"🚀 How do I get started with VIP?", a:"Message us on WhatsApp: 03308735191\n\nWe'll confirm, take payment, and schedule your live video call setup — usually within 24 hours." },
+    ]
+  },
+
+  faq: {
+    label:'❓ General FAQs',
+    sub:'Common questions about Velocity',
+    qs: [
+      { q:"🚀 What is Velocity exactly?", a:"Velocity is a Pakistani gaming service that gives you lifetime access to the entire Steam library — millions of games — delivered to your PC in under 10 seconds.\n\nNo downloading, no installs, no waiting. Pay once, play forever." },
+      { q:"☁️ How is this different from cloud gaming?", a:"Cloud gaming streams video from a remote server — it requires constant fast internet and has input lag.\n\nVelocity routes game files directly to your machine. They run locally, with full performance. No video compression, no lag." },
+      { q:"🇵🇰 Which cities in Pakistan are covered?", a:"All major cities:\n\n• Karachi\n• Lahore\n• Islamabad\n• Quetta\n• And more nationwide\n\nOur nodes are built specifically for Pakistani infrastructure." },
+      { q:"🎮 How many games are actually available?", a:"Millions — the entire eligible Steam catalog.\n\nThe showcase you see is just a small sample. If a game is on Steam without aggressive DRM, it's in your vault." },
+      { q:"💳 How do I pay?", a:"We accept:\n\n• EasyPaisa\n• JazzCash\n• Bank transfer\n\nMessage us on WhatsApp to arrange payment — it's simple and fast." },
+      { q:"🔒 Is Velocity safe to use?", a:"Completely.\n\nVelocity is a legitimate service. Games are delivered through our verified network. No malware, no ban risk, no sketchy downloads." },
+      { q:"📶 Do I need internet to play?", a:"Yes — an internet connection is needed to route games to your machine.\n\nBut once loaded, most titles run locally. You just need connectivity to initiate." },
+      { q:"🏆 Which plan do most people choose?", a:"VIP, by a wide margin.\n\nOnce people see it's just Rs. 500 more than Elite for the complete experience, the choice becomes obvious." },
+      { q:"📞 What's your WhatsApp number?", a:"03308735191\n\nWe respond quickly and are happy to answer any question before you pay." },
+      { q:"🎯 Can I request specific games?", a:"Yes — if a game you want isn't in the showcase, just ask.\n\nIf it's on Steam without aggressive DRM, it's almost certainly available in your vault." },
+      { q:"🖥️ Does Velocity work on laptops?", a:"Yes — both desktops and laptops.\n\nAs long as you're running Windows and have a decent internet connection, you're good to go." },
+      { q:"🔄 Are games always up to date?", a:"Yes.\n\nOur vault is always maintained and updated. You always get the latest version of every game — no manual patches needed." },
+    ]
+  },
+
+  misconceptions: {
+    label:'🤔 Common Misconceptions',
+    sub:'Things people get wrong about Velocity',
+    qs: [
+      { q:"🤔 Is this just piracy in disguise?", a:"Not at all.\n\nVelocity is a legitimate game delivery service with real infrastructure, routing, and support.\n\nGames are delivered through our network — no shady downloads, no malware risk, no ban risk." },
+      { q:"☁️ Is Velocity the same as cloud gaming like GeForce NOW?", a:"No — completely different.\n\nCloud gaming streams video from a remote server (needs constant fast internet + causes lag).\n\nVelocity delivers game files directly to your machine. They run locally at full performance." },
+      { q:"📦 Do I need to download huge files?", a:"No — that's exactly the point.\n\nVelocity routes games to your machine in under 10 seconds. There are no big downloads, no installs, no waiting." },
+      { q:"🔄 Do I need a Steam account?", a:"No.\n\nVelocity is completely separate from Steam. You don't need an account, you don't need Steam installed. We handle everything independently." },
+      { q:"💰 Is this a subscription service?", a:"Not at all.\n\nOne payment — that's it. No monthly fees, no annual renewals, no surprise charges. Your access is yours for life." },
+      { q:"⚡ Will Velocity slow down my PC?", a:"The opposite.\n\nVelocity bypasses traditional bloat entirely. Zero background updaters, zero CPU waste. Your PC actually runs cleaner." },
+      { q:"🔒 Is there DRM or restrictions on games?", a:"No Denuvo, no invasive DRM — that's the whole point.\n\nThe only exclusions are titles with aggressive kernel-level anti-cheat (like Valorant) which perform poorly on any delivery service." },
+      { q:"🌍 Is Velocity only for Karachi?", a:"No — nationwide.\n\nWe have nodes covering Karachi, Lahore, Islamabad, Quetta, and more. Built for all of Pakistan." },
+      { q:"🖥️ Do I need a gaming PC?", a:"Not necessarily.\n\nVelocity works on most Windows PCs from the last 7-8 years. Tell us your specs and we'll confirm what you can run." },
+      { q:"📞 Is support only for Elite and VIP?", a:"Correct.\n\nStarter and Custom include no support. Pro includes initial setup only.\n\nElite and VIP have full lifetime support — any time, any issue, forever." },
+      { q:"🎮 Are there really millions of games?", a:"Yes.\n\nThe showcase is just a small sample. Your vault mirrors the entire eligible Steam catalog — every genre, every era, every title without aggressive DRM." },
+      { q:"💡 Is Velocity new and unproven?", a:"No.\n\nWe've been serving Pakistani gamers and continuously improving our infrastructure.\n\nMessage us on WhatsApp to talk to real customers who can vouch for us." },
+    ]
+  },
+
+  tos: {
+    label:'📋 Terms & Conditions',
+    sub:'Important policies to know',
+    qs: [
+      { q:"📋 What am I actually buying?", a:"You're buying lifetime access to Velocity's game delivery service and network.\n\nThis gives you the ability to play titles from our vault on your linked machine, for life." },
+      { q:"🔄 Can I get a refund?", a:"Contact us within 24 hours if there's a genuine technical issue we can't resolve.\n\nWe want happy customers — reach out on WhatsApp and we'll work it out." },
+      { q:"🖥️ How many PCs can I use?", a:"Access is tied to one machine per plan.\n\nElite includes free re-setup when you change PCs. VIP has a transferable license for one family member." },
+      { q:"🚫 What games are excluded?", a:"Games with:\n\n• Denuvo DRM\n• Kernel-level anti-cheat (like Valorant, PUBG)\n\nThese are excluded for performance reasons — they don't work well on any delivery service, not just ours." },
+      { q:"📶 Is constant internet required?", a:"You need internet to initiate game delivery.\n\nOnce a game is loaded, most titles run locally. But Velocity routes in real time so connectivity is needed." },
+      { q:"💳 What payment methods are accepted?", a:"• EasyPaisa\n• JazzCash\n• Bank transfer\n\nAll payments are confirmed before access is granted." },
+      { q:"🔒 What data do you collect?", a:"Only what's needed to link your machine to our network.\n\nWe don't store personal data beyond what's required for your service access." },
+      { q:"🌐 Is this legal?", a:"Yes.\n\nVelocity is a legitimate service operating within Pakistan. Contact us directly if you have specific legal concerns." },
+      { q:"👥 Can I share my access?", a:"Access is for one user per machine.\n\nVIP includes an official transferable license to pass to one family member. Other plans are non-transferable without arranging with us first." },
+      { q:"⬆️ Can I upgrade my plan?", a:"Yes — anytime.\n\nJust pay the difference and we upgrade you instantly. Message us on WhatsApp." },
+      { q:"🔧 What if Velocity has downtime?", a:"We maintain 99%+ uptime and monitor our infrastructure continuously.\n\nIf downtime occurs, we communicate and resolve it. Elite and VIP users are notified first." },
+      { q:"📞 How do I cancel or end my access?", a:"Velocity access doesn't auto-renew — it's a one-time purchase.\n\nThere's nothing to cancel. Your access simply continues until you stop using it." },
+    ]
+  }
+};
+
+// ── TOPICS LIST ────────────────────────────────────
+const TOPICS = [
+  { id:'starter',        emoji:'⚙️', title:'Starter Plan',          sub:'Rs. 2,999 — Self-Serve' },
+  { id:'pro',            emoji:'🔧', title:'Pro Plan',              sub:'Rs. 3,999 — We Set You Up' },
+  { id:'custom',         emoji:'🎮', title:'Custom Plan',           sub:'Rs. 45/game — Build Your Own' },
+  { id:'elite',          emoji:'🚀', title:'Elite Plan',            sub:'Rs. 4,499 — Lifetime Support' },
+  { id:'vip',            emoji:'👑', title:'VIP / Concierge Plan',  sub:'Rs. 4,999 — The Full Experience' },
+  { id:'faq',            emoji:'❓', title:'General FAQs',          sub:'Common questions about Velocity' },
+  { id:'misconceptions', emoji:'🤔', title:'Common Misconceptions', sub:'What people get wrong about us' },
+  { id:'tos',            emoji:'📋', title:'Terms & Conditions',    sub:'Policies & important info' },
+];
+
+// ══════════════════════════════════════════════════
+//  CHAT STATE
+// ══════════════════════════════════════════════════
+let chatOpen = false;
+let currentTopic = null;
+let pillUsed = [];       // indices of pills already clicked
+
+const PACKAGES = {
+  starter: 'starter',
+  pro: 'pro',
+  custom: 'custom',
+  elite: 'elite',
+  vip: 'vip'
+};
+
+// ── HELPERS ────────────────────────────────────────
+function appendMsg(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg ' + role;
+  const avatar = role === 'bot' ? '🚀' : '👤';
+  // format newlines as <br> and keep readable
+  const formatted = text.replace(/\n/g, '<br>');
+  wrap.innerHTML = `<div class="msg-avatar">${avatar}</div><div class="msg-bubble">${formatted}</div>`;
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── TOPIC SCREEN ───────────────────────────────────
+function showTopicScreen() {
+  currentTopic = null;
+  pillUsed = [];
+  document.getElementById('topic-screen').style.display = 'flex';
+  document.getElementById('topic-screen').style.flexDirection = 'column';
+  document.getElementById('chat-messages').style.display = 'none';
+  document.getElementById('chat-no-input-note').style.display = 'none';
+  document.getElementById('chat-back-btn').style.display = 'none';
+  document.getElementById('chat-context-badge').style.display = 'none';
+  document.getElementById('chat-messages').innerHTML = '';
+
+  // Right panel: show topic labels
+  document.getElementById('prompts-pkg-label').textContent = '💬 Velocity Support';
+  document.getElementById('prompts-title').textContent = 'Choose a topic';
+  document.getElementById('prompts-hint').textContent = 'Select a topic to see questions';
+  document.getElementById('prompts-body').innerHTML = '';
+
+  // Render topic cards on LEFT
+  const ts = document.getElementById('topic-screen');
+  ts.innerHTML = '';
+
+  const intro = document.createElement('div');
+  intro.className = 'topic-intro';
+  intro.textContent = 'What do you need help with?';
+  ts.appendChild(intro);
+
+  TOPICS.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'topic-card' + (t.id === 'human' ? ' human' : '');
+    card.style.animationDelay = (i * 0.055) + 's';
+    card.innerHTML = `
+      <div class="topic-emoji">${t.emoji}</div>
+      <div class="topic-info">
+        <div class="topic-title">${t.title}</div>
+        <div class="topic-sub">${t.sub}</div>
+      </div>
+      <div class="topic-arrow">→</div>
+    `;
+    card.addEventListener('click', () => openTopic(t.id));
+    ts.appendChild(card);
+  });
+
+  // Talk to human
+  const human = document.createElement('div');
+  human.className = 'topic-card human';
+  human.style.animationDelay = (TOPICS.length * 0.055) + 's';
+  human.innerHTML = `
+    <div class="topic-emoji">💬</div>
+    <div class="topic-info">
+      <div class="topic-title">Talk to a Human</div>
+      <div class="topic-sub">WhatsApp: 03308735191</div>
+    </div>
+    <div class="topic-arrow">→</div>
+  `;
+  human.addEventListener('click', () => {
+    appendMsg('bot', "📱 You can reach us directly on WhatsApp:\n\n03308735191\n\nWe respond quickly — real humans, not bots.");
+    openTopic('faq'); // just go to faq as fallback to show messages
+    setTimeout(() => {
+      appendMsg('bot', "📱 You can reach us directly on WhatsApp:\n\n03308735191\n\nWe respond quickly — real humans, not bots.");
+    }, 100);
+  });
+  ts.appendChild(human);
+}
+
+function openTopic(topicId) {
+  currentTopic = topicId;
+  pillUsed = [];
+
+  const data = TOPIC_DB[topicId];
+  if (!data) return;
+
+  // Switch views
+  document.getElementById('topic-screen').style.display = 'none';
+  document.getElementById('chat-messages').style.display = 'flex';
+  document.getElementById('chat-no-input-note').style.display = 'block';
+  document.getElementById('chat-back-btn').style.display = 'flex';
+
+  // Context badge
+  const badge = document.getElementById('chat-context-badge');
+  badge.style.display = 'block';
+  badge.textContent = data.label + ' — ' + data.sub;
+
+  // Clear messages and greet
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = '';
+
+  const greetings = {
+    starter: "👋 Hey! You're looking at the Starter Plan.\n\nIt's our most affordable option — great if you're technically confident.\n\nClick any question on the right to get an instant answer!",
+    pro: "🔧 Hey! You're exploring the Pro Plan.\n\nWe handle your entire setup — you just show up and play.\n\nClick any question on the right!",
+    custom: "🎮 Hey! Checking out Custom pricing?\n\nYou pick the budget or game count — we match it.\n\nUse the calculator on the pricing page, or click a question below!",
+    elite: "🚀 Hey! You're looking at Elite — our most popular choice.\n\nSetup + lifetime support, forever. Just Rs. 500 more than Pro.\n\nClick any question on the right!",
+    vip: "👑 Hey! You're exploring VIP — the complete experience.\n\nEverything included, nothing missing. Live setup, hardware tuning, 1-hour response.\n\nClick any question on the right!",
+    faq: "❓ Hey! Happy to answer your general questions about Velocity.\n\nClick anything on the right to get an instant answer!",
+    misconceptions: "🤔 Let's clear things up!\n\nThere's a lot of confusion about how Velocity works. Click any question on the right and we'll set the record straight.",
+    tos: "📋 Here's everything you need to know about our policies.\n\nClick any question on the right for a clear, honest answer.",
+  };
+
+  appendMsg('bot', greetings[topicId] || "👋 Hey! Click any question on the right to get an instant answer.");
+
+  // Right panel
+  document.getElementById('prompts-pkg-label').textContent = data.label;
+  document.getElementById('prompts-title').textContent = 'Click any question';
+  document.getElementById('prompts-hint').textContent = 'Questions stay available — ask as many as you want';
+
+  renderPills(data.qs);
+}
+
+function renderPills(qs) {
+  const body = document.getElementById('prompts-body');
+  body.innerHTML = '';
+  qs.forEach((item, idx) => {
+    const pill = document.createElement('button');
+    pill.className = 'prompt-pill' + (pillUsed.includes(idx) ? ' used' : '');
+    pill.textContent = item.q;
+    pill.style.animationDelay = (idx * 0.04) + 's';
+    pill.addEventListener('click', () => handlePillClick(idx, item, pill));
+    body.appendChild(pill);
+  });
+}
+
+function handlePillClick(idx, item, pillEl) {
+  // Mark as used (dim it) but DON'T remove it
+  if (!pillUsed.includes(idx)) pillUsed.push(idx);
+  pillEl.classList.add('used');
+
+  // Post question as user message
+  appendMsg('user', item.q);
+
+  // Post answer as bot message after short delay
+  setTimeout(() => {
+    appendMsg('bot', item.a);
+    // Re-enable the pill visually after answering (it stays, just slightly dimmed)
+    setTimeout(() => {
+      pillEl.classList.remove('used');
+    }, 600);
+  }, 280);
+}
+
+// ── OPEN / CLOSE CHAT ──────────────────────────────
+function openChat(pkg) {
+  chatOpen = true;
+  document.getElementById('chat-panel').classList.add('open');
+  document.querySelector('#chat-bubble .chat-notif').style.display = 'none';
+  document.getElementById('chat-tooltip').classList.remove('show');
+  document.body.style.overflow = 'hidden';
+  if(typeof lenis !== 'undefined') lenis.stop();
+
+  if (pkg && TOPIC_DB[pkg]) {
+    // Opened from a package button — go directly to that topic
+    showTopicScreen(); // init first
+    openTopic(pkg);
+  } else {
+    // Opened from bubble — show topic screen
+    showTopicScreen();
+  }
+}
+
+function closeChat() {
+  chatOpen = false;
+  document.getElementById('chat-panel').classList.remove('open');
+  document.body.style.overflow = '';
+  if(typeof lenis !== 'undefined') lenis.start();
+}
+
+document.getElementById('chat-bubble').addEventListener('click', () => {
+  if (!chatOpen) openChat(null); else closeChat();
+});
+
+document.getElementById('chat-messages').addEventListener('wheel', e => e.stopPropagation(), { passive:true });
+
+setTimeout(() => {
+  const tt = document.getElementById('chat-tooltip');
+  if (!chatOpen) { tt.classList.add('show'); setTimeout(()=>tt.classList.remove('show'), 5000); }
+}, 3500);
+
+function revealWA() {
+  const el = document.getElementById('wa-num');
+  el.classList.toggle('hidden');
+  if(!el.classList.contains('hidden')) {
+    gsap.from(el,{opacity:0,y:20,duration:.6,ease:'power3.out'});
+    gsap.to(el,{scale:1.05,duration:.18,yoyo:true,repeat:3,ease:'power1.inOut',delay:.1});
+  }
+}
+
+document.querySelectorAll('.cta-primary,.cta-ghost,.f-chip,.load-more-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){ gsap.fromTo(this,{scale:.94},{scale:1,duration:.4,ease:'elastic.out(1,0.5)'}); });
+});
 </script>
 </body>
 </html>
